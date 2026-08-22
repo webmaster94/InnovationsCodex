@@ -661,8 +661,8 @@ async function _gmGrantInspiration(
       return { success: false, message: "The active imbuement is no longer available." };
     }
     if (Object.values(state.inspirationGrantsById)
-      .some((grant) => grant.reservationId === reservation.id)) {
-      return { success: false, message: "This imbuement already carries Bardic Inspiration." };
+      .some((grant) => grant.targetActorUuid === reservation.targetActorUuid)) {
+      return { success: false, message: "That creature already has Innovation Bardic Inspiration." };
     }
     const temporary = await fromUuid(reservation.temporaryItemUuid);
     const targetActor = requireWorldActor(await fromUuid(reservation.targetActorUuid));
@@ -1292,7 +1292,7 @@ function getActiveInnovations(codex: AnyDocument) {
       payment: reservation?.payment ?? "legacy",
       slotLevel: reservation?.slotLevel ?? null,
       canInspire: Boolean(reservation) && !Object.values(state.inspirationGrantsById)
-        .some((grant) => grant.reservationId === reservationId)
+        .some((grant) => grant.targetActorUuid === reservation?.targetActorUuid)
     };
   });
 }
