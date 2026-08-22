@@ -14,6 +14,7 @@ import {
 } from "./college-features.ts";
 import {
   parseSlotLevel,
+  resolveLegacyTemporaryLink,
   resolveSlotLevel,
   updateSlotLevelMaps,
   type SlotLevel
@@ -23,7 +24,7 @@ const MODULE_ID = "innovations-codex";
 const CODEX_NAME = "Innovations Codex";
 const FEAT_NAME = "Create Innovation";
 const PROTOTYPE_NAME = "Prototype Imbuements";
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 4;
 const RECENT_OPEN = new Map();
 const ACTION_LOCKS = new Map<string, Promise<void>>();
 const WORLD_STATE_LOCK = `${MODULE_ID}:world-state`;
@@ -1990,41 +1991,78 @@ async function migrateCodex(
       .filter((temporary: AnyDocument) => temporary.getFlag?.(MODULE_ID, "isTemporary")
         && temporary.getFlag?.(MODULE_ID, "originUuid") === codex.uuid)
     : [];
+  const approvedLegacyBlueprints = blueprints.map((blueprint: AnyDocument) => ({
+    uuid: blueprint.uuid,
+    name: blueprint.name,
+    type: blueprint.type,
+    identifier: blueprint.system?.identifier ?? null,
+    slotLevel: state.approvalsByBlueprintUuid[blueprint.uuid]?.slotLevel ?? null
+  }));
   for (const temporary of legacyTemporaries) {
-    let reservationId = String(temporary.getFlag(MODULE_ID, "reservationId") ?? "");
-    if (reservationId && state.reservationsById[reservationId]) continue;
-    const level = parseSlotLevel(temporary.getFlag(MODULE_ID, "spellLevel"));
-    if (!level) continue;
-    reservationId ||= foundry.utils.randomID();
-    const bareName = temporary.name.replace(/^Temporary\s+/i, "");
-    const flaggedBlueprintUuid = temporary.getFlag(MODULE_ID, "blueprintUuid");
-    const blueprint = blueprints.find((candidate: AnyDocument) => candidate.uuid === flaggedBlueprintUuid)
-      ?? blueprints.find((candidate: AnyDocument) => candidate.name === bareName && getSlotLevel(codex, candidate) === level)
-      ?? blueprints.find((candidate: AnyDocument) => candidate.name === bareName);
-    if (!blueprint) {
+    const link = resolveLegacyTemporaryLink({
+      name: temporary.name,
+      type: temporary.type,
+      identifier: temporary.system?.identifier ?? null,
+      blueprintUuid: temporary.getFlag(MODULE_ID, "blueprintUuid"),
+      slotLevel: temporary.getFlag(MODULE_ID, "spellLevel")
+    }, approvedLegacyBlueprints);
+    const blueprint = link
+      ? blueprints.find((candidate: AnyDocument) => candidate.uuid === link.blueprintUuid)
+      : null;
+    if (!link || !blueprint) {
       console.warn(`${MODULE_ID} | Preserved unlinked legacy temporary item for GM review`, temporary.uuid);
       continue;
     }
-    state.reservationsById[reservationId] = {
-      id: reservationId,
-      codexUuid: codex.uuid,
-      ownerActorUuid: actor.uuid,
-      temporaryItemUuid: temporary.uuid,
-      blueprintUuid: blueprint.uuid,
-      targetActorUuid: temporary.parent?.uuid ?? "",
-      hostItemUuid: temporary.getFlag(MODULE_ID, "hostItemUuid") ?? null,
-      slotLevel: level,
-      payment: temporary.getFlag(MODULE_ID, "payment") === "free" ? "free" : "slot",
-      createdAt: Number(temporary.getFlag(MODULE_ID, "createdAt") ?? Date.now())
-    };
+    const level = link.slotLevel;
+    const targetActorUuid = temporary.parent?.uuid ?? "";
+    const existingReservations = Object.values(state.reservationsById)
+      .filter((reservation) => reservation.temporaryItemUuid === temporary.uuid);
+    if (existingReservations.length > 1) {
+      console.warn(`${MODULE_ID} | Preserved duplicate legacy reservations for GM review`, temporary.uuid);
+      continue;
+    }
+    let reservation = existingReservations[0] ?? null;
+    if (reservation) {
+      const storedById = state.reservationsById[reservation.id];
+      const valid = storedById === reservation
+        && reservation.codexUuid === codex.uuid
+        && reservation.ownerActorUuid === actor.uuid
+        && reservation.temporaryItemUuid === temporary.uuid
+        && reservation.blueprintUuid === blueprint.uuid
+        && reservation.targetActorUuid === targetActorUuid
+        && reservation.slotLevel === level
+        && ["slot", "free"].includes(reservation.payment);
+      if (!valid) {
+        console.warn(`${MODULE_ID} | Preserved conflicting legacy reservation for GM review`, temporary.uuid);
+        continue;
+      }
+    } else {
+      let reservationId = String(temporary.getFlag(MODULE_ID, "reservationId") ?? "");
+      while (!reservationId || state.reservationsById[reservationId]) {
+        reservationId = foundry.utils.randomID();
+      }
+      reservation = {
+        id: reservationId,
+        codexUuid: codex.uuid,
+        ownerActorUuid: actor.uuid,
+        temporaryItemUuid: temporary.uuid,
+        blueprintUuid: blueprint.uuid,
+        targetActorUuid,
+        hostItemUuid: temporary.getFlag(MODULE_ID, "hostItemUuid") ?? null,
+        slotLevel: level,
+        payment: "slot",
+        createdAt: Date.now()
+      };
+      state.reservationsById[reservation.id] = reservation;
+    }
     const updates = temporaryUpdates.get(temporary.parent.uuid) ?? [];
     updates.push({
       _id: temporary.id,
-      [`flags.${MODULE_ID}.reservationId`]: reservationId,
+      [`flags.${MODULE_ID}.reservationId`]: reservation.id,
       [`flags.${MODULE_ID}.ownerActorUuid`]: actor.uuid,
-      [`flags.${MODULE_ID}.blueprintUuid`]: blueprint.uuid,
-      [`flags.${MODULE_ID}.payment`]: state.reservationsById[reservationId].payment,
-      [`flags.${MODULE_ID}.spellLevel`]: level
+      [`flags.${MODULE_ID}.blueprintUuid`]: reservation.blueprintUuid,
+      [`flags.${MODULE_ID}.payment`]: reservation.payment,
+      [`flags.${MODULE_ID}.spellLevel`]: reservation.slotLevel
     });
     temporaryUpdates.set(temporary.parent.uuid, updates);
   }

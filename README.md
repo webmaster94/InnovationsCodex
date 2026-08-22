@@ -56,7 +56,7 @@ Edit compendium documents in `pack-src`, not in the generated `packs` directory.
 
 ## Releases
 
-Push a tag matching the manifest version, such as `v1.1.0`. The release workflow rejects a tag that does not match `module.json`, runs the full validation command, and attaches these installable assets to the GitHub release:
+Push a tag matching the manifest version, such as `v1.1.1`. The release workflow rejects a tag that does not match `module.json`, runs the full validation command, and attaches these installable assets to the GitHub release:
 
 - `innovations-codex.zip`
 - `module.json`

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1 - 2026-08-22
+
+### Fixed
+
+- Imported pre-1.1 temporary innovations that lack tier and blueprint flags when exactly one approved legacy blueprint matches. Ambiguous items remain untouched for GM review.
+
 ## 1.1.0 - 2026-08-22
 
 ### Added

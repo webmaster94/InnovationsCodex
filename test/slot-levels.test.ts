@@ -1,7 +1,73 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { resolveSlotLevel, updateSlotLevelMaps } from "../src/slot-levels.ts";
+import {
+  resolveLegacyTemporaryLink,
+  resolveSlotLevel,
+  updateSlotLevelMaps
+} from "../src/slot-levels.ts";
+
+test("recovers a missing legacy temporary tier from one approved blueprint", () => {
+  assert.deepEqual(resolveLegacyTemporaryLink({
+    name: "Temporary Goggles of Night",
+    blueprintUuid: null,
+    slotLevel: null
+  }, [
+    {
+      uuid: "Actor.owner.Item.canonicalGoggles",
+      name: "Goggles of Night",
+      slotLevel: 1
+    },
+    {
+      uuid: "Actor.owner.Item.unapprovedDuplicate",
+      name: "Goggles of Night",
+      slotLevel: null
+    }
+  ]), {
+    blueprintUuid: "Actor.owner.Item.canonicalGoggles",
+    slotLevel: 1
+  });
+});
+
+test("does not replace a malformed legacy temporary tier with an inferred one", () => {
+  assert.equal(resolveLegacyTemporaryLink({
+    name: "Temporary Goggles of Night",
+    blueprintUuid: null,
+    slotLevel: "not-a-tier"
+  }, [{
+    uuid: "Actor.owner.Item.canonicalGoggles",
+    name: "Goggles of Night",
+    slotLevel: 1
+  }]), null);
+});
+
+test("requires the legacy Temporary prefix before inferring by name", () => {
+  assert.equal(resolveLegacyTemporaryLink({
+    name: "Goggles of Night",
+    blueprintUuid: null,
+    slotLevel: null
+  }, [{
+    uuid: "Actor.owner.Item.canonicalGoggles",
+    name: "Goggles of Night",
+    slotLevel: 1
+  }]), null);
+});
+
+test("does not infer a same-name blueprint with conflicting item identity", () => {
+  assert.equal(resolveLegacyTemporaryLink({
+    name: "Temporary Goggles of Night",
+    type: "weapon",
+    identifier: "other-item",
+    blueprintUuid: null,
+    slotLevel: null
+  }, [{
+    uuid: "Actor.owner.Item.canonicalGoggles",
+    name: "Goggles of Night",
+    type: "equipment",
+    identifier: "goggles-of-night",
+    slotLevel: 1
+  }]), null);
+});
 
 test("reads a legacy Foundry flag whose dotted UUID was expanded into nested keys", () => {
   const slotLevelsByUuid = {
