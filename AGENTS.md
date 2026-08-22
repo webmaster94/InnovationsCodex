@@ -26,7 +26,7 @@ This repository builds the `innovations-codex` Foundry VTT module. Treat this fi
 - Foundry support is 13.347 through 14.
 - dnd5e support begins at 5.2.5 and is verified through 5.3.3. Do not widen either range without testing the new target.
 - socketlib is required. Register module sockets during the socketlib-ready lifecycle and authorize mutations on the GM side.
-- Summon Construct comes from `dnd-players-handbook`; keep that dependency required unless the feature is changed to work without the spell.
+- Summon Construct comes from `dnd-players-handbook`. Keep it recommended so a missing premium pack does not disable the rest of the subclass; runtime must report and skip only the unavailable spell.
 
 ## Required checks
 

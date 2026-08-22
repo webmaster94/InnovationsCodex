@@ -38,7 +38,9 @@
         "id": "socketlib",
         "type": "module",
         "manifest": "https://github.com/farling42/foundryvtt-socketlib/releases/latest/download/module.json"
-      },
+      }
+    ],
+    "recommends": [
       {
         "id": "dnd-players-handbook",
         "type": "module",

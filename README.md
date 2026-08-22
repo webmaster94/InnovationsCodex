@@ -9,9 +9,9 @@ Innovations Codex implements the College of Innovation homebrew subclass for the
 | Foundry Virtual Tabletop | 13.347 through 14 |
 | dnd5e system | Minimum 5.2.5, verified 5.3.3 |
 | socketlib | Required |
-| D&D Player's Handbook module | Required for the Summon Construct grant |
+| D&D Player's Handbook module | Recommended for the Summon Construct grant |
 
-The manifest does not declare support for Foundry 12, dnd5e versions before 5.2.5, or future dnd5e major releases. Summon Construct is stored in the premium `dnd-players-handbook` pack rather than the core dnd5e spell pack, so the handbook is a required module dependency.
+The manifest does not declare support for Foundry 12, dnd5e versions before 5.2.5, or future dnd5e major releases. Summon Construct is stored in the premium `dnd-players-handbook` pack rather than the core dnd5e spell pack. Without that module, the rest of Innovations Codex remains available and the missing spell grant is reported to the GM.
 
 ## Installation
 
