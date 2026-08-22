@@ -7,7 +7,7 @@ import {
   updateSlotLevelMaps
 } from "../src/slot-levels.ts";
 
-test("recovers a missing legacy temporary tier from one approved blueprint", () => {
+test("recovers a missing legacy temporary tier from one trusted blueprint", () => {
   assert.deepEqual(resolveLegacyTemporaryLink({
     name: "Temporary Goggles of Night",
     blueprintUuid: null,

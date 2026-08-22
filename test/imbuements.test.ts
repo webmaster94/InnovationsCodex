@@ -29,7 +29,7 @@ test("enforces the proficiency-bonus active imbuement cap", () => {
   });
 });
 
-test("requires an approved slot level for a free imbuement", () => {
+test("requires an assigned pattern tier for a free imbuement", () => {
   assert.equal(validateFabrication({
     activeCount: 0,
     proficiencyBonus: 3,

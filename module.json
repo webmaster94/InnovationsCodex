@@ -1,8 +1,8 @@
 {
   "id": "innovations-codex",
   "title": "Innovations Codex",
-  "description": "Implements the College of Innovation for dnd5e, including feature-owned advancements, GM-approved patterns, Prototype Imbuements, and Analytical Muse automation.",
-  "version": "1.1.1",
+  "description": "Implements the College of Innovation for dnd5e, including feature-owned advancements, player-managed patterns, Prototype Imbuements, and Analytical Muse automation.",
+  "version": "1.1.2",
   "authors": [
     {
       "name": "override367",
@@ -16,7 +16,7 @@
   "socket": true,
   "url": "https://github.com/webmaster94/InnovationsCodex",
   "manifest": "https://github.com/webmaster94/InnovationsCodex/releases/latest/download/module.json",
-  "download": "https://github.com/webmaster94/InnovationsCodex/releases/download/v1.1.1/innovations-codex.zip",
+  "download": "https://github.com/webmaster94/InnovationsCodex/releases/download/v1.1.2/innovations-codex.zip",
   "compatibility": {
     "minimum": "13.347",
     "verified": "14",

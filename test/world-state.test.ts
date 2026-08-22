@@ -120,7 +120,7 @@ test("canonical codex registration is idempotent and rejects blank identifiers",
   );
 });
 
-test("a GM approval is indexed by blueprint UUID and snapshots its metadata", () => {
+test("a tier assignment is indexed by blueprint UUID and snapshots its metadata", () => {
   const canonical = registerCanonicalCodex(createWorldState(), {
     ownerActorUuid: "Actor.owner",
     codexUuid: "Actor.owner.Item.codex"
@@ -162,7 +162,7 @@ test("a GM approval is indexed by blueprint UUID and snapshots its metadata", ()
   ), true);
 });
 
-test("approval requires the owner's canonical codex", () => {
+test("tier assignment requires the owner's canonical codex", () => {
   const canonical = registerCanonicalCodex(createWorldState(), {
     ownerActorUuid: "Actor.owner",
     codexUuid: "Actor.owner.Item.codex"
@@ -183,7 +183,7 @@ test("approval requires the owner's canonical codex", () => {
   );
 });
 
-test("an active reservation is keyed by ID and bound to its approval", () => {
+test("an active reservation is keyed by ID and bound to its tier assignment", () => {
   const canonical = registerCanonicalCodex(createWorldState(), {
     ownerActorUuid: "Actor.owner",
     codexUuid: "Actor.owner.Item.codex"
@@ -235,7 +235,7 @@ test("an active reservation is keyed by ID and bound to its approval", () => {
   ), true);
 });
 
-test("reservation creation rejects stale approval data and duplicate temporary items", () => {
+test("reservation creation rejects stale tier data and duplicate temporary items", () => {
   let state = registerCanonicalCodex(createWorldState(), {
     ownerActorUuid: "Actor.owner",
     codexUuid: "Actor.owner.Item.codex"

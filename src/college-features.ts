@@ -1,5 +1,26 @@
 export const MODULE_ID = "innovations-codex";
 
+export const CREATE_INNOVATION_DESCRIPTION = `<p>You channel your ingenuity to produce arcane innovations. Use this feature to open your <strong>Innovations Codex</strong> — a personal workshop where you design, categorize, and fabricate magical items.</p>
+<p>When you use this feature, your codex is automatically added to your inventory if you don't already have one. From the codex window you can:</p>
+<ul>
+<li><strong>Create</strong> new innovation patterns in your personal Codex.</li>
+<li><strong>Choose</strong> each pattern's tier, up to the highest tier your Bard level supports.</li>
+<li><strong>Fabricate</strong> innovations onto yourself or allies by expending a spell slot of the appropriate level.</li>
+<li><strong>Recall</strong> fabricated innovations, removing them from their holder.</li>
+</ul>
+<p>New patterns start as <em>Uncategorized</em>. Choose a tier before fabricating them. Later edits automatically apply to future fabrications without changing active copies.</p>`;
+
+const LEGACY_CREATE_DESCRIPTION_MARKERS = [
+  "new innovation blueprints for your DM to review",
+  "new patterns for GM approval and tier assignment",
+  "a GM approves their pattern tier"
+] as const;
+
+export function shouldReplaceLegacyCreateDescription(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  return LEGACY_CREATE_DESCRIPTION_MARKERS.some((marker) => value.includes(marker));
+}
+
 export interface InnovationSpellSource {
   readonly name: string;
   readonly spellLevel: 1 | 2 | 3 | 4 | 5;

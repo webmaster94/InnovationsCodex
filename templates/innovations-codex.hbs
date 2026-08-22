@@ -42,16 +42,12 @@
               <img class="ic-icon" src="{{img}}" alt="{{name}}" />
               <div class="ic-name">{{name}}</div>
               <div class="ic-slot">
-                {{#if ../isGM}}
-                  <label for="ic-level-{{@index}}">GM approval</label>
-                  <select id="ic-level-{{@index}}" data-slot-level>
-                    {{#each slotOptions}}
-                      <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
-                    {{/each}}
-                  </select>
-                {{else}}
-                  <span class="ic-approval-status">{{approvalLabel}}</span>
-                {{/if}}
+                <label for="ic-level-{{@index}}">Pattern tier</label>
+                <select id="ic-level-{{@index}}" data-slot-level>
+                  {{#each slotOptions}}
+                    <option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>
+                  {{/each}}
+                </select>
               </div>
               <div class="ic-target">
                 {{#if ../defaultTarget}}
@@ -65,7 +61,7 @@
                 </select>
               </div>
               <button type="button" data-action="fabricate" data-item-uuid="{{uuid}}"
-                {{#unless canFabricate}}disabled title="Awaiting GM approval"{{/unless}}
+                {{#unless canFabricate}}disabled title="{{fabricationDisabledReason}}"{{/unless}}
                 {{#unless ../hasTargets}}disabled{{/unless}}>
                 Fabricate
               </button>

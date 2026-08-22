@@ -23,6 +23,12 @@ https://github.com/webmaster94/InnovationsCodex/releases/latest/download/module.
 
 Enable Innovations Codex and socketlib in the world. Import or drag **College of Innovation** from the module's **College of Innovation** compendium onto a Bard.
 
+## Player-managed patterns
+
+The player who owns the College of Innovation actor manages that actor's patterns. They can create a pattern, choose or change its tier, and edit its name, description, activities, effects, image, or other mechanics without GM approval. The module rejects tiers above the character's current limit, but it does not ask a GM to approve valid choices.
+
+Edits keep the existing tier and update the matching world mirror. Future fabrications use the latest pattern; an innovation that is already active stays as it was when fabricated. Moving a pattern out of the actor's canonical Codex, deleting it, or setting it to **Uncategorized** removes its usable tier.
+
 ## Compendium design
 
 The pack uses stable document IDs so its advancement UUIDs remain valid across rebuilds. Advancement data is kept with the feature that owns it:
@@ -56,7 +62,7 @@ Edit compendium documents in `pack-src`, not in the generated `packs` directory.
 
 ## Releases
 
-Push a tag matching the manifest version, such as `v1.1.1`. The release workflow rejects a tag that does not match `module.json`, runs the full validation command, and attaches these installable assets to the GitHub release:
+Push a tag matching the manifest version, such as `vX.Y.Z`. The release workflow rejects a tag that does not match `module.json`, runs the full validation command, and attaches these installable assets to the GitHub release:
 
 - `innovations-codex.zip`
 - `module.json`

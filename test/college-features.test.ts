@@ -7,12 +7,30 @@ import {
   assessFeatureChoiceMigration,
   buildFeatureAdvancementMigration,
   buildFeatureActivity,
+  CREATE_INNOVATION_DESCRIPTION,
   FEATURE_ADVANCEMENT_INVARIANTS,
   identifyInnovationSpellGrant,
   INNOVATION_SPELL_GRANTS,
   planFeatureActivityRepair,
+  shouldReplaceLegacyCreateDescription,
   validateFeatureOwnedAdvancements
 } from "../src/college-features.ts";
+
+test("Create Innovation content replaces only the old approval workflow text", async () => {
+  assert.equal(shouldReplaceLegacyCreateDescription(
+    "Submit new patterns for GM approval and tier assignment."
+  ), true);
+  assert.equal(shouldReplaceLegacyCreateDescription(
+    "Custom campaign notes written by the player."
+  ), false);
+
+  const path = new URL(
+    "../pack-src/college-of-innovation/Create_Innovation_uqWt4M1DkZGHSGfr.json",
+    import.meta.url
+  );
+  const source = JSON.parse(await readFile(path, "utf8"));
+  assert.equal(source.system.description.value, CREATE_INNOVATION_DESCRIPTION);
+});
 
 test("selects the fixed Innovation Spells grants applicable to a Bard 8", () => {
   const grants = applicableInnovationSpellGrants(8);

@@ -1,10 +1,20 @@
 # Changelog
 
+## 1.1.2 - 2026-08-22
+
+### Changed
+
+- Let the actor owner create patterns and choose, change, or clear their tiers without GM approval.
+- Kept a pattern's tier when its content changes and synchronized the latest version to its existing world mirror.
+- Made future fabrications use the latest pattern while leaving active fabricated copies unchanged.
+- Preserved tiers from 1.1.0 and 1.1.1 using stable embedded Item IDs rather than names.
+- Removed stale tier records and mirrors when a pattern leaves its canonical Codex or loses its Innovation identity.
+
 ## 1.1.1 - 2026-08-22
 
 ### Fixed
 
-- Imported pre-1.1 temporary innovations that lack tier and blueprint flags when exactly one approved legacy blueprint matches. Ambiguous items remain untouched for GM review.
+- Imported pre-1.1 temporary innovations that lack tier and blueprint flags when exactly one trusted legacy blueprint matches. Ambiguous items remain untouched for manual repair.
 
 ## 1.1.0 - 2026-08-22
 

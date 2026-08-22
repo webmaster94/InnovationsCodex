@@ -8,8 +8,10 @@ import { maximumPatternTier, patternCapacity } from "./subclass-rules.ts";
 import {
   applicableInnovationSpellGrants,
   buildFeatureAdvancementMigration,
+  CREATE_INNOVATION_DESCRIPTION,
   identifyInnovationSpellGrant,
   planFeatureActivityRepair,
+  shouldReplaceLegacyCreateDescription,
   type AdvancementFeature
 } from "./college-features.ts";
 import {
@@ -19,12 +21,18 @@ import {
   updateSlotLevelMaps,
   type SlotLevel
 } from "./slot-levels.ts";
+import {
+  canManageActorPatterns,
+  planBlueprintRevision,
+  recoverPreviouslyAssignedTier,
+  staleTierAssignmentUuids
+} from "./blueprint-tiers.ts";
 
 const MODULE_ID = "innovations-codex";
 const CODEX_NAME = "Innovations Codex";
 const FEAT_NAME = "Create Innovation";
 const PROTOTYPE_NAME = "Prototype Imbuements";
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 const RECENT_OPEN = new Map();
 const ACTION_LOCKS = new Map<string, Promise<void>>();
 const WORLD_STATE_LOCK = `${MODULE_ID}:world-state`;
@@ -50,6 +58,7 @@ type Reservation = {
   createdAt: number;
 };
 
+/** Persisted v1.1 field names represent an owner-managed tier assignment, not GM approval. */
 type BlueprintApproval = {
   blueprintUuid: string;
   codexUuid: string;
@@ -58,6 +67,7 @@ type BlueprintApproval = {
   approvedBy: string;
   approvedAt: number;
   snapshot: Record<string, unknown>;
+  assignedSnapshot?: Record<string, unknown>;
 };
 
 type InspirationGrant = {
@@ -173,7 +183,8 @@ function currentSocketUser(context: SocketContext): AnyDocument {
 function requireActorOwner(context: SocketContext, actor: AnyDocument): AnyDocument {
   const user = currentSocketUser(context);
   const ownerLevel = CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER;
-  if (!user.isGM && !actor?.testUserPermission?.(user, ownerLevel)) {
+  const isOwner = Boolean(actor?.testUserPermission?.(user, ownerLevel));
+  if (!canManageActorPatterns({ isGM: Boolean(user.isGM), isOwner })) {
     throw new Error(`You do not own ${actor?.name ?? "that actor"}.`);
   }
   return user;
@@ -243,10 +254,21 @@ function blueprintSnapshot(blueprint: AnyDocument): Record<string, unknown> {
   return data;
 }
 
-function snapshotsMatch(approval: BlueprintApproval, blueprint: AnyDocument): boolean {
-  const current = blueprintSnapshot(blueprint);
-  return foundry.utils.isObjectEqual?.(approval.snapshot, current)
-    ?? JSON.stringify(approval.snapshot) === JSON.stringify(current);
+function planCurrentBlueprintRevision(
+  assignment: BlueprintApproval | null | undefined,
+  blueprint: AnyDocument,
+  codex: AnyDocument,
+  ownerActor: AnyDocument
+) {
+  const normalized = assignment && !assignment.assignedSnapshot
+    ? { ...assignment, assignedSnapshot: foundry.utils.deepClone(assignment.snapshot) }
+    : assignment;
+  return planBlueprintRevision(normalized, {
+    blueprintUuid: blueprint.uuid,
+    codexUuid: codex.uuid,
+    ownerActorUuid: ownerActor.uuid,
+    snapshot: blueprintSnapshot(blueprint)
+  });
 }
 
 function getPrototypeFeature(actor: AnyDocument): AnyDocument | null {
@@ -352,7 +374,7 @@ async function _gmCreateInnovation(
 ): Promise<string | null> {
   assertReady();
   const actor = requireCollegeActor(requireWorldActor(await fromUuid(actorUuid)));
-  const user = requireActorOwner(this, actor);
+  requireActorOwner(this, actor);
   const codex = actor.items.get(codexId);
   const state = getWorldState();
   requireCanonicalCodex(codex, actor, state);
@@ -361,8 +383,7 @@ async function _gmCreateInnovation(
   if (!ALLOWED_BLUEPRINT_TYPES.has(itemType)) throw new Error("Unsupported innovation item type.");
 
   return withLock(actor.uuid, async () => {
-    const existingPatterns = actor.items.filter((item: AnyDocument) => isItemInCodex(item, codex)
-      && item.getFlag?.(MODULE_ID, "isInnovation"));
+    const existingPatterns = actor.items.filter((item: AnyDocument) => isInnovationBlueprint(item, codex));
     const capacity = patternCapacity(getBardLevel(actor));
     if (existingPatterns.length >= capacity) {
       throw new Error(`${actor.name} already knows the maximum ${capacity} innovation patterns for their Bard level.`);
@@ -384,10 +405,6 @@ async function _gmCreateInnovation(
     if (!created) return null;
 
     await syncMirrorFromBlueprint(created, null);
-    void notifyGMs(
-      `<strong>${escapeHtml(user.name)}</strong>'s character <strong>${escapeHtml(actor.name)}</strong> created `
-      + `a new innovation draft: <strong>${escapeHtml(created.name)}</strong>.`
-    ).catch((error) => console.warn(`${MODULE_ID} | Could not send GM notification`, error));
     return created.uuid;
   });
 }
@@ -419,10 +436,9 @@ async function _gmFabricate(
   const user = requireActorOwner(this, ownerActor);
   const initialState = getWorldState();
   requireCanonicalCodex(codex, ownerActor, initialState);
-  if (blueprint.parent !== ownerActor || !isItemInCodex(blueprint, codex)) {
+  if (blueprint.parent !== ownerActor || !isInnovationBlueprint(blueprint, codex)) {
     throw new Error("Blueprint does not belong to that codex.");
   }
-  if (!blueprint.getFlag?.(MODULE_ID, "isInnovation")) throw new Error("That item is not an innovation blueprint.");
   if (!isAllowedTarget(user, targetActor)) throw new Error("That actor is not an allowed fabrication target.");
 
   const hostItem = hostItemUuid ? requireItemDocument(await fromUuid(hostItemUuid)) : null;
@@ -433,15 +449,27 @@ async function _gmFabricate(
   return withLock(WORLD_STATE_LOCK, async () => {
     const state = getWorldState();
     requireCanonicalCodex(codex, ownerActor, state);
-    const approval = state.approvalsByBlueprintUuid[blueprint.uuid];
-    if (!approval || approval.codexUuid !== codex.uuid || approval.ownerActorUuid !== ownerActor.uuid) {
-      return { success: false, message: "This blueprint is awaiting GM approval." };
+    if (blueprint.parent !== ownerActor || !isInnovationBlueprint(blueprint, codex)) {
+      throw new Error("Blueprint does not belong to that codex.");
     }
-    if (!snapshotsMatch(approval, blueprint)) {
-      return { success: false, message: "This blueprint changed after approval and must be reviewed again." };
+    const revision = planCurrentBlueprintRevision(
+      state.approvalsByBlueprintUuid[blueprint.uuid],
+      blueprint,
+      codex,
+      ownerActor
+    );
+    if (revision.kind === "unassigned") {
+      return { success: false, message: "This blueprint needs a pattern tier." };
     }
+    if (revision.kind === "conflict") {
+      throw new Error("The blueprint's tier assignment does not match its canonical owner and codex.");
+    }
+    const tierAssignment = revision.assignment as BlueprintApproval;
+    state.approvalsByBlueprintUuid[blueprint.uuid] = tierAssignment;
+    await setWorldState(state);
+    await syncMirrorFromBlueprint(blueprint, revision.tier);
     const allowedTier = maximumPatternTier(ownerActor.system?.spells ?? {});
-    if (approval.slotLevel > allowedTier) {
+    if (tierAssignment.slotLevel > allowedTier) {
       return { success: false, message: `This blueprint's level exceeds ${ownerActor.name}'s current pattern tier.` };
     }
     if (hostItemUuid && Object.values(state.reservationsById)
@@ -449,7 +477,7 @@ async function _gmFabricate(
       return { success: false, message: "That item already bears an active innovation." };
     }
 
-    const slotLevel = approval.slotLevel;
+    const slotLevel = tierAssignment.slotLevel;
     const prototype = getPrototypeFeature(ownerActor);
     const slot = getSpellSlot(ownerActor, slotLevel);
     const activeCount = getActiveOwnerReservations(ownerActor, state).length;
@@ -486,7 +514,7 @@ async function _gmFabricate(
       }
       paymentApplied = true;
 
-      const itemData: any = foundry.utils.deepClone(approval.snapshot);
+      const itemData: any = foundry.utils.deepClone(revision.source);
       foundry.utils.setProperty(itemData, "system.container", null);
       if (itemData.system) delete itemData.system.containerId;
       const temporaryName = blueprint.name.startsWith("Temporary ") ? blueprint.name : `Temporary ${blueprint.name}`;
@@ -792,12 +820,10 @@ async function _gmAssignSlotLevel(
   const codex = requireItemDocument(await fromUuid(codexUuid));
   const blueprint = requireItemDocument(await fromUuid(blueprintUuid));
   const ownerActor = requireCollegeActor(requireWorldActor(codex.parent));
-  const user = currentSocketUser(this);
-  if (!user.isGM) throw new Error("Only a GM may approve an innovation or assign its spell level.");
+  const user = requireActorOwner(this, ownerActor);
   const initialState = getWorldState();
   requireCanonicalCodex(codex, ownerActor, initialState);
-  if (blueprint.parent !== ownerActor || !isItemInCodex(blueprint, codex)
-    || !blueprint.getFlag?.(MODULE_ID, "isInnovation")) {
+  if (blueprint.parent !== ownerActor || !isInnovationBlueprint(blueprint, codex)) {
     throw new Error("Blueprint does not belong to that codex.");
   }
   const level = requestedLevel === null || requestedLevel === "" || requestedLevel === 0 || requestedLevel === "0"
@@ -814,6 +840,9 @@ async function _gmAssignSlotLevel(
   return withLock(WORLD_STATE_LOCK, async () => {
     const state = getWorldState();
     requireCanonicalCodex(codex, ownerActor, state);
+    if (blueprint.parent !== ownerActor || !isInnovationBlueprint(blueprint, codex)) {
+      throw new Error("Blueprint does not belong to that codex.");
+    }
     const maps = updateSlotLevelMaps({
       blueprintId: blueprint.id,
       blueprintName: blueprint.name,
@@ -827,6 +856,7 @@ async function _gmAssignSlotLevel(
     if (level === null) {
       delete state.approvalsByBlueprintUuid[blueprint.uuid];
     } else {
+      const snapshot = blueprintSnapshot(blueprint);
       state.approvalsByBlueprintUuid[blueprint.uuid] = {
         blueprintUuid: blueprint.uuid,
         codexUuid: codex.uuid,
@@ -834,7 +864,8 @@ async function _gmAssignSlotLevel(
         slotLevel: level,
         approvedBy: user.id,
         approvedAt: Date.now(),
-        snapshot: blueprintSnapshot(blueprint)
+        snapshot,
+        assignedSnapshot: foundry.utils.deepClone(snapshot)
       };
     }
     await setWorldState(state);
@@ -844,11 +875,6 @@ async function _gmAssignSlotLevel(
       [`flags.${MODULE_ID}.approvalUpdatedAt`]: Date.now()
     }, { innovationsCodexApproval: true });
     await syncMirrorFromBlueprint(blueprint, level);
-    const label = level ? `Level ${level}` : "Uncategorized";
-    void notifyGMs(
-      `<strong>${escapeHtml(user.name)}</strong>'s character <strong>${escapeHtml(ownerActor.name)}</strong> assigned `
-      + `<strong>${escapeHtml(blueprint.name)}</strong> to <strong>${label}</strong>.`
-    ).catch((error) => console.warn(`${MODULE_ID} | Could not send GM notification`, error));
     return true;
   });
 }
@@ -857,13 +883,12 @@ async function _gmSyncMirror(this: SocketContext, blueprintUuid: string): Promis
   assertReady();
   const blueprint = requireItemDocument(await fromUuid(blueprintUuid));
   const ownerActor = requireCollegeActor(requireWorldActor(blueprint.parent));
-  const user = currentSocketUser(this);
-  if (!user.isGM) throw new Error("Only a GM may synchronize innovation mirrors.");
-  const codex = ownerActor.items.find((item: AnyDocument) => isCodexItem(item) && isItemInCodex(blueprint, item));
+  requireActorOwner(this, ownerActor);
+  const codex = ownerActor.items.find((item: AnyDocument) => isCodexItem(item) && isInnovationBlueprint(blueprint, item));
   if (!codex) throw new Error("Blueprint is not inside an Innovations Codex.");
   const state = getWorldState();
   requireCanonicalCodex(codex, ownerActor, state);
-  await syncMirrorFromBlueprint(blueprint, state.approvalsByBlueprintUuid[blueprint.uuid]?.slotLevel ?? null);
+  await synchronizeBlueprintRevision(blueprint);
   return true;
 }
 
@@ -1069,17 +1094,7 @@ async function ensureWorldItems(rootFolder: AnyDocument): Promise<void> {
       img: "icons/skills/trades/smithing-anvil-silver-red.webp",
       folder: rootFolder.id,
       system: {
-        description: {
-          value: `<p>You channel your ingenuity to produce arcane innovations. Use this feature to open your <strong>Innovations Codex</strong> — a personal workshop where you design, categorize, and fabricate magical items.</p>
-<p>When you use this feature, your codex is automatically added to your inventory if you don't already have one. From the codex window you can:</p>
-<ul>
-<li><strong>Create</strong> new innovation blueprints for your DM to review.</li>
-<li><strong>Submit</strong> new patterns for GM approval and tier assignment.</li>
-<li><strong>Fabricate</strong> innovations onto yourself or allies by expending a spell slot of the appropriate level.</li>
-<li><strong>Recall</strong> fabricated innovations, removing them from their holder.</li>
-</ul>
-<p>Newly created innovations start as <em>Uncategorized</em> and cannot be fabricated until a spell level is assigned.</p>`
-        },
+        description: { value: CREATE_INNOVATION_DESCRIPTION },
         activities: { [activityId]: buildCreateActivity(activityId) }
       },
       flags: { [MODULE_ID]: { isCreateFeature: true, schemaVersion: SCHEMA_VERSION } }
@@ -1092,6 +1107,9 @@ async function ensureWorldItems(rootFolder: AnyDocument): Promise<void> {
       [`flags.${MODULE_ID}.isCreateFeature`]: true,
       [`flags.${MODULE_ID}.schemaVersion`]: SCHEMA_VERSION
     };
+    if (shouldReplaceLegacyCreateDescription(existingFeat.system?.description?.value)) {
+      updates["system.description.value"] = CREATE_INNOVATION_DESCRIPTION;
+    }
     if (!activity) {
       const activityId = foundry.utils.randomID();
       updates[`system.activities.${activityId}`] = buildCreateActivity(activityId);
@@ -1168,9 +1186,8 @@ function getSlotLevel(
 }
 
 /**
- * Set the spell level for a blueprint. Updates codex flags, item flag,
- * mirrors to world folder, and notifies GM. All GM operations are routed
- * through socketlib.
+ * Set the pattern tier for a blueprint. Updates codex flags, the item flag,
+ * and the world mirror. Privileged writes are routed through socketlib.
  */
 async function setSlotLevelForBlueprint(
   codex: AnyDocument,
@@ -1181,13 +1198,14 @@ async function setSlotLevelForBlueprint(
   await assignSlotLevel(codex.uuid, blueprint.uuid, level);
 }
 
-function buildSlotOptions(selectedLevel: SlotLevel | null) {
+function buildSlotOptions(selectedLevel: SlotLevel | null, maximumTier: number) {
   const options = [{
     value: "0",
     label: "Uncategorized",
     selected: selectedLevel === null || selectedLevel === undefined
   }];
-  for (let i = 1; i <= 9; i++) {
+  const highestOption = Math.max(maximumTier, selectedLevel ?? 0);
+  for (let i = 1; i <= highestOption; i++) {
     options.push({ value: String(i), label: `${i}`, selected: i === selectedLevel });
   }
   return options;
@@ -1235,24 +1253,29 @@ function getPortraitSize(): number {
 
 function getBlueprintItems(actor: AnyDocument, codex: AnyDocument) {
   const state = getWorldState();
+  const allowedTier = maximumPatternTier(actor.system?.spells ?? {});
   return actor.items
-    .filter((item: AnyDocument) => isItemInCodex(item, codex))
+    .filter((item: AnyDocument) => isInnovationBlueprint(item, codex))
     .map((item: AnyDocument) => {
-      const approval = state.approvalsByBlueprintUuid[item.uuid];
-      const approved = Boolean(approval
-        && approval.codexUuid === codex.uuid
-        && approval.ownerActorUuid === actor.uuid
-        && snapshotsMatch(approval, item));
-      const level = approved ? approval.slotLevel : null;
+      const revision = planCurrentBlueprintRevision(
+        state.approvalsByBlueprintUuid[item.uuid],
+        item,
+        codex,
+        actor
+      );
+      const assigned = revision.kind === "assigned";
+      const level = assigned ? revision.tier : null;
+      const canFabricate = revision.kind === "assigned" && revision.tier <= allowedTier;
       return {
         name: item.name,
         img: item.img,
         uuid: item.uuid,
         slotLevel: level,
-        approved,
-        approvalLabel: approved ? `Level ${level}` : "Awaiting GM approval",
-        canFabricate: approved,
-        slotOptions: buildSlotOptions(level)
+        canFabricate,
+        fabricationDisabledReason: !assigned
+          ? "Choose a pattern tier"
+          : `Pattern tier exceeds ${actor.name}'s current limit`,
+        slotOptions: buildSlotOptions(level, allowedTier)
       };
     });
 }
@@ -1261,6 +1284,10 @@ function isItemInCodex(item: AnyDocument, codex: AnyDocument): boolean {
   const container = item?.system?.container;
   const containerId = container?.id ?? container;
   return containerId === codex.id;
+}
+
+function isInnovationBlueprint(item: AnyDocument, codex: AnyDocument): boolean {
+  return Boolean(item?.getFlag?.(MODULE_ID, "isInnovation") === true && isItemInCodex(item, codex));
 }
 
 function getActiveTemporaryDocuments(codexUuid: string, state = getWorldState()): AnyDocument[] {
@@ -1494,7 +1521,6 @@ class InnovationsCodexApp extends HandlebarsApplication {
       activeCount: activeInnovations.length,
       activeLimit,
       freeAvailable: Boolean(prototype) && freeUsesSpent < 1,
-      isGM: Boolean(game.user?.isGM),
       iconSize: getIconSize(),
       portraitSize: getPortraitSize(),
       isBlueprintsTab: this.activeTab === "blueprints",
@@ -1521,7 +1547,6 @@ class InnovationsCodexApp extends HandlebarsApplication {
   }
 
   async #changeSlotLevel(select: HTMLSelectElement): Promise<void> {
-    if (!game.user?.isGM) throw new Error("Only a GM may approve innovation levels.");
     select.disabled = true;
     try {
       const row = select.closest<HTMLElement>("[data-blueprint-uuid]");
@@ -1533,9 +1558,9 @@ class InnovationsCodexApp extends HandlebarsApplication {
       const blueprint = await fromUuid(blueprintUuid);
       if (!blueprint) throw new Error("Blueprint not found.");
       await setSlotLevelForBlueprint(this.codex, blueprint, level);
-      await this.render();
     } finally {
       select.disabled = false;
+      await this.render();
     }
   }
 
@@ -1652,11 +1677,15 @@ class InnovationsCodexApp extends HandlebarsApplication {
     if (!(targetActor instanceof Actor)) throw new Error("Target actor not found.");
     if (!ownerActor) throw new Error("The Codex must be owned by an actor.");
 
-    const approval = getWorldState().approvalsByBlueprintUuid[blueprint.uuid];
-    const slotLevel = approval?.codexUuid === this.codex.uuid && snapshotsMatch(approval, blueprint)
-      ? approval.slotLevel : null;
+    const revision = planCurrentBlueprintRevision(
+      getWorldState().approvalsByBlueprintUuid[blueprint.uuid],
+      blueprint,
+      this.codex,
+      ownerActor
+    );
+    const slotLevel = revision.kind === "assigned" ? revision.tier : null;
     if (!slotLevel) {
-      ui.notifications?.warn("This blueprint is awaiting GM approval.");
+      ui.notifications?.warn("This blueprint needs a pattern tier.");
       return;
     }
     const prototype = getPrototypeFeature(ownerActor);
@@ -1723,7 +1752,7 @@ function isCollegeOfInnovationActor(actor: AnyDocument): boolean {
 function findCodexForBlueprint(blueprint: AnyDocument): AnyDocument | null {
   const actor = blueprint?.parent;
   if (!(actor instanceof Actor)) return null;
-  return actor.items.find((item: AnyDocument) => isCodexItem(item) && isItemInCodex(blueprint, item)) ?? null;
+  return actor.items.find((item: AnyDocument) => isCodexItem(item) && isInnovationBlueprint(blueprint, item)) ?? null;
 }
 
 function liveAdvancementStorage(item: AnyDocument, advancements: readonly any[]): unknown {
@@ -1933,30 +1962,65 @@ async function repairLegacyGogglesBlueprint(actor: AnyDocument, codex: AnyDocume
 async function migrateCodex(
   codex: AnyDocument,
   state: WorldState,
-  importLegacyTrust = false
+  importLegacyTrust = false,
+  trustStableItemMap = false
 ): Promise<void> {
   if (!(codex.parent instanceof Actor)) return;
   const actor = codex.parent;
   if (importLegacyTrust) await repairLegacyGogglesBlueprint(actor, codex);
-  const blueprints = actor.items.filter((item: AnyDocument) => isItemInCodex(item, codex));
+  const blueprints = actor.items.filter((item: AnyDocument) => isInnovationBlueprint(item, codex));
   const byItemId: Record<string, SlotLevel> = {};
   const byName: Record<string, SlotLevel> = {};
   const blueprintUpdates: Record<string, unknown>[] = [];
+  const validBlueprintUuids = blueprints.map((blueprint: AnyDocument) => blueprint.uuid);
+  const staleAssignmentUuids = staleTierAssignmentUuids(state.approvalsByBlueprintUuid, {
+    ownerActorUuid: actor.uuid,
+    codexUuid: codex.uuid,
+    validBlueprintUuids
+  });
+  for (const blueprintUuid of staleAssignmentUuids) {
+    delete state.approvalsByBlueprintUuid[blueprintUuid];
+    const staleBlueprint = await fromUuid(blueprintUuid);
+    if (staleBlueprint instanceof Item && staleBlueprint.parent === actor) {
+      blueprintUpdates.push({
+        _id: staleBlueprint.id,
+        [`flags.${MODULE_ID}.spellLevel`]: null,
+        [`flags.${MODULE_ID}.approved`]: false
+      });
+    }
+    await deleteMirrorForBlueprint(blueprintUuid);
+  }
+  const actorBlueprintPrefix = `${actor.uuid}.Item.`;
+  for (const mirror of game.items.filter((item: AnyDocument) =>
+    String(item.getFlag?.(MODULE_ID, "mirrorOf") ?? "").startsWith(actorBlueprintPrefix))) {
+    const blueprintUuid = String(mirror.getFlag(MODULE_ID, "mirrorOf"));
+    if (!validBlueprintUuids.includes(blueprintUuid)) {
+      await deleteMirrorForBlueprint(blueprintUuid);
+    }
+  }
   for (const blueprint of blueprints) {
     let approval: BlueprintApproval | undefined = state.approvalsByBlueprintUuid[blueprint.uuid];
-    const approvalIsTrusted = approval
-      && approval.blueprintUuid === blueprint.uuid
-      && approval.codexUuid === codex.uuid
-      && approval.ownerActorUuid === actor.uuid
-      && parseSlotLevel(approval.slotLevel) !== null
-      && snapshotsMatch(approval, blueprint);
-    if (approval && !approvalIsTrusted) {
+    const revision = planCurrentBlueprintRevision(approval, blueprint, codex, actor);
+    if (revision.kind === "assigned") {
+      approval = revision.assignment as BlueprintApproval;
+      state.approvalsByBlueprintUuid[blueprint.uuid] = approval;
+    } else if (revision.kind === "conflict") {
       delete state.approvalsByBlueprintUuid[blueprint.uuid];
       approval = undefined;
     }
     if (!approval && importLegacyTrust) {
-      const legacyLevel = getSlotLevel(codex, blueprint, false);
-      if (legacyLevel !== null && legacyLevel <= maximumPatternTier(actor.system?.spells ?? {})) {
+      const recoveredLevel = recoverPreviouslyAssignedTier({
+        blueprintId: blueprint.id,
+        slotLevelsByItemId: codex.getFlag(MODULE_ID, "slotLevelsByItemId"),
+        assignmentUpdatedAt: blueprint.getFlag(MODULE_ID, "approvalUpdatedAt"),
+        trustStableItemMap
+      });
+      const inferredLegacyLevel = recoveredLevel === null ? getSlotLevel(codex, blueprint, false) : null;
+      const legacyLevel = recoveredLevel ?? inferredLegacyLevel;
+      const canRestore = recoveredLevel !== null
+        || (legacyLevel !== null && legacyLevel <= maximumPatternTier(actor.system?.spells ?? {}));
+      if (legacyLevel !== null && canRestore) {
+        const snapshot = blueprintSnapshot(blueprint);
         approval = {
           blueprintUuid: blueprint.uuid,
           codexUuid: codex.uuid,
@@ -1964,7 +2028,8 @@ async function migrateCodex(
           slotLevel: legacyLevel,
           approvedBy: "migration",
           approvedAt: Date.now(),
-          snapshot: blueprintSnapshot(blueprint)
+          snapshot,
+          assignedSnapshot: foundry.utils.deepClone(snapshot)
         };
         state.approvalsByBlueprintUuid[blueprint.uuid] = approval;
       }
@@ -1976,7 +2041,6 @@ async function migrateCodex(
     }
     blueprintUpdates.push({
       _id: blueprint.id,
-      [`flags.${MODULE_ID}.isInnovation`]: true,
       [`flags.${MODULE_ID}.spellLevel`]: level,
       [`flags.${MODULE_ID}.approved`]: Boolean(approval)
     });
@@ -2088,7 +2152,8 @@ async function migrateCodex(
 async function migrateSubclassActor(
   actor: AnyDocument,
   state = getWorldState(),
-  importLegacyTrust = false
+  importLegacyTrust = false,
+  trustStableItemMap = false
 ): Promise<void> {
   if (!isCollegeOfInnovationActor(actor)) return;
   const worldFeature = game.items.find((item: AnyDocument) => isCreateFeature(item));
@@ -2101,10 +2166,14 @@ async function migrateSubclassActor(
     [createFeature] = await actor.createEmbeddedDocuments("Item", [data], { innovationsCodexMigration: true });
   }
   if (createFeature) {
-    await createFeature.update({
+    const createFeatureUpdates: Record<string, unknown> = {
       [`flags.${MODULE_ID}.isCreateFeature`]: true,
       [`flags.${MODULE_ID}.schemaVersion`]: SCHEMA_VERSION
-    }, { innovationsCodexMigration: true });
+    };
+    if (shouldReplaceLegacyCreateDescription(createFeature.system?.description?.value)) {
+      createFeatureUpdates["system.description.value"] = CREATE_INNOVATION_DESCRIPTION;
+    }
+    await createFeature.update(createFeatureUpdates, { innovationsCodexMigration: true });
     await repairFeatureActivity(
       createFeature,
       "create-innovation",
@@ -2169,7 +2238,7 @@ async function migrateSubclassActor(
     const recorded = state.codexByActorUuid[actor.uuid];
     const canonical = codices.find((codex: AnyDocument) => codex.uuid === recorded) ?? codices[0];
     state.codexByActorUuid[actor.uuid] = canonical.uuid;
-    await migrateCodex(canonical, state, importLegacyTrust);
+    await migrateCodex(canonical, state, importLegacyTrust, trustStableItemMap);
     const duplicateUpdates = codices.filter((codex: AnyDocument) => codex !== canonical)
       .map((codex: AnyDocument) => ({ _id: codex.id, [`flags.${MODULE_ID}.canonical`]: false }));
     if (duplicateUpdates.length) {
@@ -2219,11 +2288,13 @@ async function repairCollegeActor(actor: AnyDocument): Promise<void> {
 
 async function runMigrations(): Promise<void> {
   await withLock(WORLD_STATE_LOCK, async () => {
-    const importLegacyTrust = Number(game.settings.get(MODULE_ID, "schemaVersion") ?? 0) < SCHEMA_VERSION;
+    const previousSchema = Number(game.settings.get(MODULE_ID, "schemaVersion") ?? 0);
+    const importLegacyTrust = previousSchema < SCHEMA_VERSION;
+    const trustStableItemMap = previousSchema >= 3 && previousSchema < SCHEMA_VERSION;
     const state = getWorldState();
     await migrateWorldCollegeContent();
     for (const actor of game.actors.contents) {
-      await migrateSubclassActor(actor, state, importLegacyTrust);
+      await migrateSubclassActor(actor, state, importLegacyTrust, trustStableItemMap);
     }
     await setWorldState(state);
     for (const actor of game.actors.contents.filter((candidate: AnyDocument) => isCollegeOfInnovationActor(candidate))) {
@@ -2315,28 +2386,81 @@ function reservedSlotsByLevel(actor: AnyDocument, state = getWorldState()): Map<
 }
 
 async function deleteMirrorForBlueprint(blueprintUuid: string): Promise<void> {
-  const mirror = game.items.find((item: AnyDocument) => item.getFlag(MODULE_ID, "mirrorOf") === blueprintUuid);
-  if (mirror) await mirror.delete({ innovationsCodexMirror: true });
+  const mirrors = game.items.filter((item: AnyDocument) => item.getFlag(MODULE_ID, "mirrorOf") === blueprintUuid);
+  for (const mirror of mirrors) await mirror.delete({ innovationsCodexMirror: true });
 }
 
-async function invalidateBlueprintApproval(blueprint: AnyDocument): Promise<void> {
+async function clearBlueprintTierMap(codex: AnyDocument, blueprint: AnyDocument): Promise<void> {
+  if (!(codex instanceof Item) || !(codex.parent instanceof Actor)) return;
+  const maps = updateSlotLevelMaps({
+    blueprintId: blueprint.id,
+    blueprintName: blueprint.name,
+    slotLevelsByItemId: codex.getFlag(MODULE_ID, "slotLevelsByItemId"),
+    slotLevelsByName: codex.getFlag(MODULE_ID, "slotLevelsByName")
+  }, null);
+  await codex.update({
+    [`flags.${MODULE_ID}.slotLevelsByItemId`]: maps.slotLevelsByItemId,
+    [`flags.${MODULE_ID}.slotLevelsByName`]: maps.slotLevelsByName
+  }, { innovationsCodexApproval: true });
+}
+
+async function synchronizeBlueprintRevision(blueprint: AnyDocument): Promise<void> {
   if (!(blueprint.parent instanceof Actor)) return;
   await withLock(WORLD_STATE_LOCK, async () => {
     const state = getWorldState();
-    if (state.approvalsByBlueprintUuid[blueprint.uuid]) {
+    const ownerActor = blueprint.parent;
+    const existingAssignment = state.approvalsByBlueprintUuid[blueprint.uuid];
+    const containingCodex = ownerActor.items.find((item: AnyDocument) =>
+      isCodexItem(item) && isItemInCodex(blueprint, item)) ?? null;
+    const canonical = containingCodex
+      && state.codexByActorUuid[ownerActor.uuid] === containingCodex.uuid
+      && blueprint.getFlag?.(MODULE_ID, "isInnovation") === true;
+    if (!canonical) {
       delete state.approvalsByBlueprintUuid[blueprint.uuid];
       await setWorldState(state);
-    }
-    await blueprint.update({
-      [`flags.${MODULE_ID}.approved`]: false,
-      [`flags.${MODULE_ID}.spellLevel`]: null
-    }, { innovationsCodexApproval: true });
-    const codex = findCodexForBlueprint(blueprint);
-    if (codex && state.codexByActorUuid[blueprint.parent.uuid] === codex.uuid) {
-      await syncMirrorFromBlueprint(blueprint, null);
-    } else {
+      const previousCodex = existingAssignment
+        ? await fromUuid(existingAssignment.codexUuid)
+        : containingCodex;
+      await clearBlueprintTierMap(previousCodex, blueprint);
+      await blueprint.update({
+        [`flags.${MODULE_ID}.approved`]: false,
+        [`flags.${MODULE_ID}.spellLevel`]: null
+      }, { innovationsCodexApproval: true });
       await deleteMirrorForBlueprint(blueprint.uuid);
+      return;
     }
+
+    const revision = planCurrentBlueprintRevision(
+      state.approvalsByBlueprintUuid[blueprint.uuid],
+      blueprint,
+      containingCodex,
+      ownerActor
+    );
+    if (revision.kind === "conflict") {
+      delete state.approvalsByBlueprintUuid[blueprint.uuid];
+      await setWorldState(state);
+      await clearBlueprintTierMap(containingCodex, blueprint);
+      await blueprint.update({
+        [`flags.${MODULE_ID}.approved`]: false,
+        [`flags.${MODULE_ID}.spellLevel`]: null
+      }, { innovationsCodexApproval: true });
+      await syncMirrorFromBlueprint(blueprint, null);
+      return;
+    }
+    if (revision.kind === "unassigned") {
+      await clearBlueprintTierMap(containingCodex, blueprint);
+      await syncMirrorFromBlueprint(blueprint, null);
+      return;
+    }
+
+    state.approvalsByBlueprintUuid[blueprint.uuid] = revision.assignment as BlueprintApproval;
+    await setWorldState(state);
+    await blueprint.update({
+      [`flags.${MODULE_ID}.approved`]: true,
+      [`flags.${MODULE_ID}.spellLevel`]: revision.tier,
+      [`flags.${MODULE_ID}.approvalUpdatedAt`]: Date.now()
+    }, { innovationsCodexApproval: true });
+    await syncMirrorFromBlueprint(blueprint, revision.tier);
   });
 }
 
@@ -2357,7 +2481,10 @@ async function reconcileDeletedItem(item: AnyDocument): Promise<void> {
     for (const [grantId, grant] of Object.entries(state.inspirationGrantsById)) {
       if (grant.grantItemUuid === item.uuid) delete state.inspirationGrantsById[grantId];
     }
-    if (state.approvalsByBlueprintUuid[item.uuid]) {
+    const tierAssignment = state.approvalsByBlueprintUuid[item.uuid];
+    if (tierAssignment) {
+      const codex = await fromUuid(tierAssignment.codexUuid);
+      await clearBlueprintTierMap(codex, item);
       delete state.approvalsByBlueprintUuid[item.uuid];
     }
     const actorUuid = Object.entries(state.codexByActorUuid)
@@ -2611,9 +2738,35 @@ Hooks.on("updateItem", (item: AnyDocument, changes: AnyDocument, options: AnyDoc
   const wasBlueprint = Boolean(state.approvalsByBlueprintUuid[item.uuid]
     || game.items.find((candidate: AnyDocument) => candidate.getFlag?.(MODULE_ID, "mirrorOf") === item.uuid));
   if (findCodexForBlueprint(item) || wasBlueprint) {
-    void invalidateBlueprintApproval(item)
-      .catch((error) => console.warn(`${MODULE_ID} | Blueprint review reset failed`, error));
+    void synchronizeBlueprintRevision(item)
+      .catch((error) => console.warn(`${MODULE_ID} | Blueprint revision sync failed`, error));
   }
+});
+
+function synchronizeBlueprintEffectRevision(effect: AnyDocument, options: AnyDocument): void {
+  if (!isActiveGM() || options?.innovationsCodexMirror || options?.innovationsCodexMigration
+    || options?.innovationsCodexApproval || options?.innovationsCodexReconcile) return;
+  const item = effect?.parent;
+  if (!(item instanceof Item) || !(item.parent instanceof Actor)) return;
+  const state = getWorldState();
+  const wasBlueprint = Boolean(state.approvalsByBlueprintUuid[item.uuid]
+    || game.items.find((candidate: AnyDocument) => candidate.getFlag?.(MODULE_ID, "mirrorOf") === item.uuid));
+  if (findCodexForBlueprint(item) || wasBlueprint) {
+    void synchronizeBlueprintRevision(item)
+      .catch((error) => console.warn(`${MODULE_ID} | Blueprint effect sync failed`, error));
+  }
+}
+
+Hooks.on("createActiveEffect", (effect: AnyDocument, options: AnyDocument) => {
+  synchronizeBlueprintEffectRevision(effect, options);
+});
+
+Hooks.on("updateActiveEffect", (effect: AnyDocument, _changes: AnyDocument, options: AnyDocument) => {
+  synchronizeBlueprintEffectRevision(effect, options);
+});
+
+Hooks.on("deleteActiveEffect", (effect: AnyDocument, options: AnyDocument) => {
+  synchronizeBlueprintEffectRevision(effect, options);
 });
 
 Hooks.on("createItem", (item: AnyDocument, options: AnyDocument) => {

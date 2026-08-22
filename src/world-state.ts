@@ -315,7 +315,7 @@ export function addReservation(
   if (!approval) {
     throw new WorldStateError(
       "APPROVAL_NOT_FOUND",
-      `${reservation.blueprintUuid} has no GM approval.`
+      `${reservation.blueprintUuid} has no pattern tier assignment.`
     );
   }
   if (approval.ownerActorUuid !== reservation.ownerActorUuid
@@ -324,7 +324,7 @@ export function addReservation(
     || approval.snapshot.fingerprint !== reservation.approvalFingerprint) {
     throw new WorldStateError(
       "APPROVAL_MISMATCH",
-      "The reservation does not match the blueprint's current GM approval."
+      "The reservation does not match the blueprint's current tier assignment."
     );
   }
 

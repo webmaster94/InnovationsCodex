@@ -21,6 +21,13 @@ This repository builds the `innovations-codex` Foundry VTT module. Treat this fi
 - Preserve `flags.dnd5e.advancementRoot`; later Magical Discoveries replacements depend on it.
 - Never infer Valyra's Analytical Muse tool choice from existing proficiencies or delete an existing proficiency during migration.
 
+## Pattern ownership
+
+- The owner of a College of Innovation actor creates patterns and assigns or clears their tiers. This must not require GM approval.
+- Validate the actor owner, canonical Codex, blueprint identity, and current maximum tier on the GM-side socket handler.
+- Content edits retain the existing tier, refresh the stored snapshot, and update the same world mirror. Existing fabricated copies remain unchanged.
+- Moving a pattern out of its canonical Codex, deleting it, clearing its Innovation identity, or choosing Uncategorized revokes its tier.
+
 ## Compatibility boundaries
 
 - Foundry support is 13.347 through 14.
