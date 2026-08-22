@@ -1,0 +1,50 @@
+{
+  "name": "Chromatic Conductor",
+  "type": "feat",
+  "_id": "VW9hGQlU02VRjEEf",
+  "img": "icons/magic/control/buff-luck-fortune-rainbow.webp",
+  "system": {
+    "activities": {},
+    "uses": {
+      "spent": 0,
+      "recovery": [],
+      "max": ""
+    },
+    "description": {
+      "value": "<p><strong data-start=\"1876\" data-end=\"1885\">Uses:</strong> Intelligence modifier per short or long rest (minimum 1).</p><p data-start=\"1947\" data-end=\"2037\">When you cast a Bard spell of 1st level or higher, you can channel extra energy into it:</p><ul data-start=\"2038\" data-end=\"2223\"><li data-start=\"2038\" data-end=\"2163\"><p data-start=\"2040\" data-end=\"2163\">Change the damage type of the spell to acid, cold, fire, lightning, or thunder, <strong data-start=\"2120\" data-end=\"2160\">or add a damage type if it lacks one</strong>.</p></li><li data-start=\"2164\" data-end=\"2223\"><p data-start=\"2166\" data-end=\"2223\">Add your <strong data-start=\"2175\" data-end=\"2200\">Charisma modifier</strong> to the damage dealt.</p></li></ul><p data-start=\"2225\" data-end=\"2368\">If the spell doesn’t normally deal damage, this added damage is applied harmlessly and does not end the spell if damage would normally do so.</p>",
+      "chat": ""
+    },
+    "identifier": "chromatic-conductor",
+    "source": {
+      "revision": 1,
+      "rules": "2024"
+    },
+    "advancement": [],
+    "crewed": false,
+    "enchant": {},
+    "prerequisites": {
+      "repeatable": false,
+      "level": null,
+      "items": []
+    },
+    "properties": [],
+    "requirements": "College of Innovation 10",
+    "type": {
+      "value": "",
+      "subtype": ""
+    }
+  },
+  "effects": [],
+  "flags": {
+    "dnd5e": {
+      "riders": {
+        "activity": []
+      }
+    },
+    "innovations-codex": {
+      "schemaVersion": 2,
+      "feature": "chromatic-conductor"
+    }
+  },
+  "_key": "!items!VW9hGQlU02VRjEEf"
+}

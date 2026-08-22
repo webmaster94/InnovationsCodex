@@ -1,0 +1,23 @@
+{
+  "name": "innovations-codex",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs && node scripts/build-packs.mjs",
+    "package": "node scripts/package.mjs && node scripts/validate-build.mjs --release",
+    "test": "node --test --experimental-strip-types test/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "validate": "npm run typecheck && npm test && npm run package"
+  },
+  "engines": {
+    "node": ">=22.6"
+  },
+  "devDependencies": {
+    "@foundryvtt/foundryvtt-cli": "3.0.4",
+    "@types/node": "^24.0.0",
+    "adm-zip": "^0.6.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.0"
+  }
+}

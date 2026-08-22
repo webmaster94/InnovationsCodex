@@ -1,0 +1,50 @@
+{
+  "name": "Masterwork Lattice",
+  "type": "feat",
+  "_id": "wn9a7fuAQOp4bBVR",
+  "img": "icons/skills/trades/academics-astronomy-navigation-purple.webp",
+  "system": {
+    "activities": {},
+    "uses": {
+      "spent": 0,
+      "recovery": [],
+      "max": ""
+    },
+    "description": {
+      "value": "<p>As an action, choose yourself and up to <strong data-start=\"2456\" data-end=\"2472\">three allies</strong> benefiting from your <strong data-start=\"2494\" data-end=\"2518\">Prototype Imbuements</strong> that you can see. You forge a magical lattice that lasts for 1 minute. The effect remains on those creatures even if they move, as long as they were within <strong data-start=\"2675\" data-end=\"2692\">line of sight</strong> when you created it.</p><ul data-start=\"2717\" data-end=\"3119\"><li data-start=\"2717\" data-end=\"2860\"><p data-start=\"2719\" data-end=\"2860\"><strong data-start=\"2719\" data-end=\"2733\">Overclock:</strong> Each affected creature is under the effects of the <em data-start=\"2785\" data-end=\"2792\">haste</em> spell (no concentration required, ends for all at the same time).</p></li><li data-start=\"2861\" data-end=\"3001\"><p data-start=\"2863\" data-end=\"3001\"><strong data-start=\"2863\" data-end=\"2882\">Auto-Stabilize:</strong> The first time each affected creature would drop to 0 HP, they instead drop to 1 HP (once per creature per lattice).</p></li><li data-start=\"3002\" data-end=\"3119\"><p data-start=\"3004\" data-end=\"3119\"><strong data-start=\"3004\" data-end=\"3027\">Magical Resistance:</strong> Each affected creature has advantage on saving throws against spells and magical effects.</p></li></ul><p data-start=\"3121\" data-end=\"3230\">You can use this feature once per long rest. You can cast it again by expending a <strong data-start=\"3203\" data-end=\"3227\">6th-level spell slot</strong>.</p>",
+      "chat": ""
+    },
+    "identifier": "masterwork-lattice",
+    "source": {
+      "revision": 1,
+      "rules": "2024"
+    },
+    "advancement": [],
+    "crewed": false,
+    "enchant": {},
+    "prerequisites": {
+      "repeatable": false,
+      "level": null,
+      "items": []
+    },
+    "properties": [],
+    "requirements": "",
+    "type": {
+      "value": "",
+      "subtype": ""
+    }
+  },
+  "effects": [],
+  "flags": {
+    "dnd5e": {
+      "riders": {
+        "activity": []
+      }
+    },
+    "innovations-codex": {
+      "schemaVersion": 2,
+      "feature": "masterwork-lattice"
+    }
+  },
+  "_key": "!items!wn9a7fuAQOp4bBVR"
+}

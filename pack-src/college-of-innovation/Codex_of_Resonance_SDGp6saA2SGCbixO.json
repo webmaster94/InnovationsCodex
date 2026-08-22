@@ -1,0 +1,69 @@
+{
+  "name": "Codex of Resonance",
+  "type": "equipment",
+  "_id": "SDGp6saA2SGCbixO",
+  "img": "icons/sundries/books/book-worn-blue.webp",
+  "system": {
+    "activities": {},
+    "uses": {
+      "spent": 0,
+      "recovery": [],
+      "max": ""
+    },
+    "description": {
+      "value": "<p><strong>Codex of Resonance.</strong> This rules reference describes the sigil-scores, harmonic diagrams, and patterns behind your Prototype Imbuements.</p><p>Your actual blueprints and active imbuements are tracked in the separate <strong>Innovations Codex</strong> opened by the <strong>Create Innovation</strong> feature.</p>",
+      "chat": ""
+    },
+    "identifier": "codex-of-resonance",
+    "source": {
+      "revision": 1,
+      "rules": "2024"
+    },
+    "identified": true,
+    "unidentified": {
+      "description": ""
+    },
+    "container": null,
+    "quantity": 1,
+    "weight": {
+      "value": 0,
+      "units": "lb"
+    },
+    "price": {
+      "value": 0,
+      "denomination": "gp"
+    },
+    "rarity": "",
+    "attunement": "",
+    "attuned": false,
+    "equipped": false,
+    "armor": {
+      "value": null,
+      "dex": null
+    },
+    "proficient": null,
+    "properties": [],
+    "strength": null,
+    "type": {
+      "value": "",
+      "baseItem": ""
+    },
+    "crew": {
+      "value": []
+    },
+    "advancement": []
+  },
+  "effects": [],
+  "flags": {
+    "dnd5e": {
+      "riders": {
+        "activity": []
+      }
+    },
+    "innovations-codex": {
+      "schemaVersion": 2,
+      "feature": "codex-of-resonance"
+    }
+  },
+  "_key": "!items!SDGp6saA2SGCbixO"
+}

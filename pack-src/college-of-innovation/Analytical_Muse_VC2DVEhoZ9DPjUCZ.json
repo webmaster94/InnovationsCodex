@@ -1,0 +1,246 @@
+{
+  "name": "Analytical Muse",
+  "type": "feat",
+  "_id": "VC2DVEhoZ9DPjUCZ",
+  "img": "icons/skills/trades/music-notes-sound-blue.webp",
+  "system": {
+    "activities": {
+      "sA575LPGjuhhtbty": {
+        "type": "utility",
+        "_id": "sA575LPGjuhhtbty",
+        "sort": 0,
+        "activation": {
+          "type": "action",
+          "value": 1,
+          "override": true,
+          "condition": ""
+        },
+        "consumption": {
+          "scaling": {
+            "allowed": false
+          },
+          "spellSlot": false,
+          "targets": []
+        },
+        "description": {
+          "chatFlavor": ""
+        },
+        "duration": {
+          "units": "inst",
+          "concentration": false,
+          "override": false
+        },
+        "effects": [],
+        "range": {
+          "units": "self",
+          "override": false,
+          "special": ""
+        },
+        "target": {
+          "template": {
+            "contiguous": false,
+            "units": "ft",
+            "type": "",
+            "stationary": false
+          },
+          "affects": {
+            "choice": false,
+            "type": ""
+          },
+          "override": false,
+          "prompt": false
+        },
+        "uses": {
+          "spent": 0,
+          "recovery": [],
+          "max": ""
+        },
+        "roll": {
+          "prompt": false,
+          "visible": false,
+          "formula": "",
+          "name": ""
+        },
+        "name": "Analytical Muse",
+        "flags": {
+          "innovations-codex": {
+            "action": "analytical-muse"
+          }
+        },
+        "visibility": {
+          "level": {},
+          "requireAttunement": false,
+          "requireIdentification": false,
+          "requireMagic": false
+        },
+        "useConditionText": "",
+        "useConditionReason": "",
+        "effectConditionText": "",
+        "macroData": {
+          "name": "",
+          "command": ""
+        },
+        "ignoreTraits": {
+          "idi": false,
+          "idr": false,
+          "idv": false,
+          "ida": false,
+          "idm": false
+        },
+        "midiProperties": {
+          "ignoreTraits": [],
+          "triggeredActivityId": "none",
+          "triggeredActivityConditionText": "",
+          "triggeredActivityTargets": "targets",
+          "triggeredActivityRollAs": "self",
+          "autoConsume": false,
+          "forceConsumeDialog": "default",
+          "forceRollDialog": "default",
+          "forceDamageDialog": "default",
+          "confirmTargets": "default",
+          "autoTargetType": "any",
+          "autoTargetAction": "default",
+          "automationOnly": false,
+          "otherActivityCompatible": true,
+          "otherActivityAsParentType": true,
+          "identifier": "",
+          "displayActivityName": false,
+          "rollMode": "default",
+          "chooseEffects": false,
+          "toggleEffect": false,
+          "ignoreFullCover": false,
+          "removeChatButtons": "default",
+          "magicEffect": false,
+          "magicDamage": false,
+          "noConcentrationCheck": false,
+          "autoCEEffects": "default",
+          "triggeredActivityConsume": true,
+          "triggeredActivityConfigure": true,
+          "skipConcentrationCheck": false
+        },
+        "isOverTimeFlag": false,
+        "overTimeProperties": {
+          "saveRemoves": true,
+          "preRemoveConditionText": "",
+          "postRemoveConditionText": "",
+          "rollAs": "target"
+        },
+        "otherActivityId": "none",
+        "otherActivityAsParentType": true,
+        "img": null,
+        "regionBehavior": {
+          "enabled": false,
+          "dispositionFilter": -1,
+          "excludeSource": true,
+          "oncePerTurn": true,
+          "wallRestriction": "none",
+          "regionVisibility": 2,
+          "attachToken": "default",
+          "rules": []
+        },
+        "regionLight": {
+          "enabled": false,
+          "dim": 0,
+          "bright": 0,
+          "color": null,
+          "alpha": 0.5,
+          "luminosity": 0.5,
+          "animationType": "",
+          "animationSpeed": 5,
+          "animationIntensity": 5
+        }
+      }
+    },
+    "uses": {
+      "spent": 0,
+      "recovery": [
+        {
+          "period": "lr",
+          "type": "recoverAll"
+        }
+      ],
+      "max": "@abilities.int.mod"
+    },
+    "description": {
+      "value": "<p>Your intellect shapes your magic as much as your charisma.</p><ul data-start=\"620\" data-end=\"1117\"><li data-start=\"620\" data-end=\"825\"><p data-start=\"622\" data-end=\"825\">You gain proficiency in <strong data-start=\"646\" data-end=\"656\">Arcana</strong> and in <strong data-start=\"664\" data-end=\"691\">calligrapher’s supplies</strong> or <strong data-start=\"695\" data-end=\"714\">jeweler’s tools</strong> (your choice). If you are already proficient in Arcana, your proficiency bonus is doubled for Arcana checks.</p></li><li data-start=\"826\" data-end=\"1117\"><p data-start=\"828\" data-end=\"1117\">When you make an <strong data-start=\"845\" data-end=\"890\">Arcana, History, Investigation, or Nature</strong> check, you can use your <strong data-start=\"915\" data-end=\"936\">Charisma modifier</strong> in place of the ability modifier normally used. You can do this a number of times equal to your <strong data-start=\"1033\" data-end=\"1058\">Intelligence modifier</strong> per long rest, or by expending a Bardic Inspiration die.</p></li><li data-start=\"826\" data-end=\"1117\"><p>When a creature benefitting from one of your <strong>Prototype Imbuements</strong> expends a bardic inspiration dice, it adds your Intelligence Modifier to the roll if it is an Attack Roll or Ability Check.</p></li><li data-start=\"826\" data-end=\"1117\"><p>Your Bardic Inspiration on a creature bearing one of your imbuments does not expire until the imbument does or it is used. You cannot regain this use of bardic inspiration while it is not expired.</p></li></ul>",
+      "chat": ""
+    },
+    "identifier": "analytical-muse",
+    "source": {
+      "revision": 1,
+      "rules": "2024"
+    },
+    "advancement": [
+      {
+        "type": "Trait",
+        "_id": "eM7Cb1McYUGCu065",
+        "level": 3,
+        "title": "Arcana Training",
+        "configuration": {
+          "mode": "upgrade",
+          "allowReplacements": false,
+          "grants": [
+            "skills:arc"
+          ],
+          "choices": []
+        },
+        "value": {
+          "chosen": []
+        },
+        "hint": "Gain Arcana proficiency, or expertise if already proficient.",
+        "flags": {}
+      },
+      {
+        "type": "Trait",
+        "_id": "Y3RVHX9BvcbkaBHB",
+        "level": 3,
+        "title": "Artisan's Training",
+        "configuration": {
+          "mode": "default",
+          "allowReplacements": false,
+          "grants": [],
+          "choices": [
+            {
+              "count": 1,
+              "pool": [
+                "tool:art:calligrapher",
+                "tool:art:jeweler"
+              ]
+            }
+          ]
+        },
+        "value": {
+          "chosen": []
+        },
+        "hint": "Choose calligrapher's supplies or jeweler's tools.",
+        "flags": {}
+      }
+    ],
+    "crewed": false,
+    "enchant": {},
+    "prerequisites": {
+      "repeatable": false,
+      "level": null,
+      "items": []
+    },
+    "properties": [],
+    "requirements": "College of Innovation 3",
+    "type": {
+      "value": "",
+      "subtype": ""
+    }
+  },
+  "effects": [],
+  "flags": {
+    "dnd5e": {
+      "riders": {
+        "activity": []
+      }
+    },
+    "innovations-codex": {
+      "schemaVersion": 2,
+      "feature": "analytical-muse"
+    }
+  },
+  "_key": "!items!VC2DVEhoZ9DPjUCZ"
+}

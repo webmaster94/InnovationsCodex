@@ -1,0 +1,199 @@
+{
+  "name": "Innovation Spells",
+  "type": "feat",
+  "_id": "uVLuEPXjnIXzAi7T",
+  "img": "icons/magic/control/control-influence-crown-yellow.webp",
+  "system": {
+    "activities": {},
+    "uses": {
+      "spent": 0,
+      "recovery": [],
+      "max": ""
+    },
+    "description": {
+      "value": "<p>You always have the following spells prepared, and they don’t count against the number of Bard spells you can prepare. They count as Bard spells for you.</p><p data-start=\"332\" data-end=\"525\"><strong data-start=\"332\" data-end=\"340\">1st:</strong> Chromatic Orb, Sanctuary, Identify<br data-start=\"364\" data-end=\"367\"><strong data-start=\"367\" data-end=\"375\">2nd:</strong> Enhance Ability, See Invisibility<br data-start=\"409\" data-end=\"412\"><strong data-start=\"412\" data-end=\"420\">3rd:</strong> Glyph of Warding, Haste<br data-start=\"447\" data-end=\"450\"><strong data-start=\"450\" data-end=\"458\">4th:</strong> Fabricate, Summon Construct<br data-start=\"486\" data-end=\"489\"><strong data-start=\"489\" data-end=\"497\">5th:</strong> Animate Objects, Creation</p>",
+      "chat": ""
+    },
+    "identifier": "innovation-spells",
+    "source": {
+      "revision": 1,
+      "rules": "2024"
+    },
+    "advancement": [
+      {
+        "type": "ItemGrant",
+        "_id": "pL3InnovSpells01",
+        "configuration": {
+          "items": [
+            {
+              "uuid": "Compendium.dnd5e.spells24.Item.phbsplChromaticO",
+              "optional": false
+            },
+            {
+              "uuid": "Compendium.dnd5e.spells24.Item.phbSanctuary0000",
+              "optional": false
+            },
+            {
+              "uuid": "Compendium.dnd5e.spells24.Item.phbsplIdentify00",
+              "optional": false
+            },
+            {
+              "uuid": "Compendium.dnd5e.spells24.Item.phbsplEnhanceAbi",
+              "optional": false
+            },
+            {
+              "uuid": "Compendium.dnd5e.spells24.Item.phbsplSeeInvisib",
+              "optional": false
+            }
+          ],
+          "optional": false,
+          "spell": {
+            "ability": [
+              "cha"
+            ],
+            "uses": {
+              "max": "",
+              "per": "",
+              "requireSlot": false
+            },
+            "method": "spell",
+            "prepared": 2
+          }
+        },
+        "value": {},
+        "level": 3,
+        "title": "Innovation Spells: 1st and 2nd Level",
+        "hint": "",
+        "flags": {}
+      },
+      {
+        "type": "ItemGrant",
+        "_id": "pL5InnovSpells03",
+        "configuration": {
+          "items": [
+            {
+              "uuid": "Compendium.dnd5e.spells24.Item.phbsplGlyphofWar",
+              "optional": false
+            },
+            {
+              "uuid": "Compendium.dnd5e.spells24.Item.phbsplHaste00000",
+              "optional": false
+            }
+          ],
+          "optional": false,
+          "spell": {
+            "ability": [
+              "cha"
+            ],
+            "uses": {
+              "max": "",
+              "per": "",
+              "requireSlot": false
+            },
+            "method": "spell",
+            "prepared": 2
+          }
+        },
+        "value": {},
+        "level": 5,
+        "title": "Innovation Spells: 3rd Level",
+        "hint": "",
+        "flags": {}
+      },
+      {
+        "type": "ItemGrant",
+        "_id": "pL7InnovSpells04",
+        "configuration": {
+          "items": [
+            {
+              "uuid": "Compendium.dnd5e.spells24.Item.phbsplFabricate0",
+              "optional": false
+            },
+            {
+              "uuid": "Compendium.dnd-players-handbook.spells.Item.phbsplSummonCons",
+              "optional": false
+            }
+          ],
+          "optional": false,
+          "spell": {
+            "ability": [
+              "cha"
+            ],
+            "uses": {
+              "max": "",
+              "per": "",
+              "requireSlot": false
+            },
+            "method": "spell",
+            "prepared": 2
+          }
+        },
+        "value": {},
+        "level": 7,
+        "title": "Innovation Spells: 4th Level",
+        "hint": "",
+        "flags": {}
+      },
+      {
+        "type": "ItemGrant",
+        "_id": "pL9InnovSpells05",
+        "configuration": {
+          "items": [
+            {
+              "uuid": "Compendium.dnd5e.spells24.Item.phbsplAnimateObj",
+              "optional": false
+            },
+            {
+              "uuid": "Compendium.dnd5e.spells24.Item.phbsplCreation00",
+              "optional": false
+            }
+          ],
+          "optional": false,
+          "spell": {
+            "ability": [
+              "cha"
+            ],
+            "uses": {
+              "max": "",
+              "per": "",
+              "requireSlot": false
+            },
+            "method": "spell",
+            "prepared": 2
+          }
+        },
+        "value": {},
+        "level": 9,
+        "title": "Innovation Spells: 5th Level",
+        "hint": "",
+        "flags": {}
+      }
+    ],
+    "crewed": false,
+    "enchant": {},
+    "prerequisites": {
+      "repeatable": false,
+      "level": null,
+      "items": []
+    },
+    "properties": [],
+    "requirements": "College of Innovation 3",
+    "type": {
+      "value": "",
+      "subtype": ""
+    }
+  },
+  "effects": [],
+  "flags": {
+    "dnd5e": {
+      "riders": {
+        "activity": []
+      }
+    },
+    "innovations-codex": {
+      "schemaVersion": 2,
+      "feature": "innovation-spells"
+    }
+  },
+  "_key": "!items!uVLuEPXjnIXzAi7T"
+}

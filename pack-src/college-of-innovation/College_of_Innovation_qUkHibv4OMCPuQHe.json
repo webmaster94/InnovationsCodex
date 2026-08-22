@@ -1,0 +1,132 @@
+{
+  "name": "College of Innovation",
+  "type": "subclass",
+  "_id": "qUkHibv4OMCPuQHe",
+  "img": "icons/skills/trades/academics-book-study-runes.webp",
+  "system": {
+    "description": {
+      "value": "<p>Bards of the College of Innovation reject the divide between performance and craftsmanship. You don’t forge devices—you imbue them. Each verse can bind an enchantment, each chord a framework for spellwork. Your allies find their blades keener, their armor lighter, and their spells sharper when they bear your creations. In battle, you stand at the center of a web of enhancements, weaving support, control, and precision into a seamless performance. Outside of battle, your craft elevates every expedition, ensuring that your companions are always equipped with exactly what the moment demands.</p>",
+      "chat": ""
+    },
+    "identifier": "bard_innovation",
+    "source": {
+      "revision": 1,
+      "rules": "2024"
+    },
+    "advancement": [
+      {
+        "type": "ItemGrant",
+        "_id": "hLmdKKJ7PgWGLcqz",
+        "configuration": {
+          "items": [
+            {
+              "uuid": "Compendium.innovations-codex.college-of-innovation.SDGp6saA2SGCbixO",
+              "optional": false
+            },
+            {
+              "uuid": "Compendium.innovations-codex.college-of-innovation.VC2DVEhoZ9DPjUCZ",
+              "optional": false
+            },
+            {
+              "uuid": "Compendium.innovations-codex.college-of-innovation.uVLuEPXjnIXzAi7T",
+              "optional": false
+            },
+            {
+              "uuid": "Compendium.innovations-codex.college-of-innovation.2jUWfdVcdialQBay",
+              "optional": false
+            },
+            {
+              "uuid": "Compendium.innovations-codex.college-of-innovation.uqWt4M1DkZGHSGfr",
+              "optional": false
+            }
+          ],
+          "optional": false,
+          "spell": null
+        },
+        "value": {},
+        "level": 3,
+        "title": "College of Innovation Features",
+        "hint": "",
+        "flags": {}
+      },
+      {
+        "type": "ItemGrant",
+        "_id": "ntO87upSGDLx8YJu",
+        "configuration": {
+          "items": [
+            {
+              "uuid": "Compendium.innovations-codex.college-of-innovation.01rTwGz6JAaMeyXN",
+              "optional": false
+            }
+          ],
+          "optional": false,
+          "spell": null
+        },
+        "value": {},
+        "level": 6,
+        "title": "Magical Discoveries",
+        "hint": "",
+        "flags": {}
+      },
+      {
+        "type": "ItemGrant",
+        "_id": "IWfPmWPTE80BxMgX",
+        "configuration": {
+          "items": [
+            {
+              "uuid": "Compendium.innovations-codex.college-of-innovation.VW9hGQlU02VRjEEf",
+              "optional": false
+            }
+          ],
+          "optional": false,
+          "spell": null
+        },
+        "value": {},
+        "level": 10,
+        "title": "Chromatic Conductor",
+        "hint": "",
+        "flags": {}
+      },
+      {
+        "type": "ItemGrant",
+        "_id": "YqXMr0lta21Y7imA",
+        "configuration": {
+          "items": [
+            {
+              "uuid": "Compendium.innovations-codex.college-of-innovation.wn9a7fuAQOp4bBVR",
+              "optional": false
+            }
+          ],
+          "optional": false,
+          "spell": null
+        },
+        "value": {},
+        "level": 14,
+        "title": "Masterwork Lattice",
+        "hint": "",
+        "flags": {}
+      }
+    ],
+    "classIdentifier": "bard",
+    "spellcasting": {
+      "progression": "none",
+      "preparation": {
+        "formula": ""
+      },
+      "ability": ""
+    }
+  },
+  "effects": [],
+  "flags": {
+    "dnd5e": {
+      "riders": {
+        "activity": []
+      }
+    },
+    "innovations-codex": {
+      "schemaVersion": 2,
+      "subclass": true
+    }
+  },
+  "_key": "!items!qUkHibv4OMCPuQHe"
+}

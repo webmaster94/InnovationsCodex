@@ -1,0 +1,201 @@
+{
+  "name": "Prototype Imbuements",
+  "type": "feat",
+  "_id": "2jUWfdVcdialQBay",
+  "img": "icons/magic/control/debuff-chains-orb-movement-blue.webp",
+  "system": {
+    "activities": {
+      "Ym0RaFNOztdvVgvT": {
+        "type": "utility",
+        "_id": "Ym0RaFNOztdvVgvT",
+        "sort": 0,
+        "activation": {
+          "type": "action",
+          "value": 1,
+          "override": true,
+          "condition": ""
+        },
+        "consumption": {
+          "scaling": {
+            "allowed": false
+          },
+          "spellSlot": false,
+          "targets": []
+        },
+        "description": {
+          "chatFlavor": ""
+        },
+        "duration": {
+          "units": "inst",
+          "concentration": false,
+          "override": false
+        },
+        "effects": [],
+        "range": {
+          "units": "self",
+          "override": false,
+          "special": ""
+        },
+        "target": {
+          "template": {
+            "contiguous": false,
+            "units": "ft",
+            "type": "",
+            "stationary": false
+          },
+          "affects": {
+            "choice": false,
+            "type": ""
+          },
+          "override": false,
+          "prompt": false
+        },
+        "uses": {
+          "spent": 0,
+          "recovery": [],
+          "max": ""
+        },
+        "roll": {
+          "prompt": false,
+          "visible": false,
+          "name": "",
+          "formula": ""
+        },
+        "name": "Open Codex",
+        "flags": {
+          "innovations-codex": {
+            "action": "open-codex"
+          }
+        },
+        "visibility": {
+          "level": {},
+          "requireAttunement": false,
+          "requireIdentification": false,
+          "requireMagic": false
+        },
+        "useConditionText": "",
+        "useConditionReason": "",
+        "effectConditionText": "",
+        "macroData": {
+          "name": "",
+          "command": ""
+        },
+        "ignoreTraits": {
+          "idi": false,
+          "idr": false,
+          "idv": false,
+          "ida": false,
+          "idm": false
+        },
+        "midiProperties": {
+          "ignoreTraits": [],
+          "triggeredActivityId": "none",
+          "triggeredActivityConditionText": "",
+          "triggeredActivityTargets": "targets",
+          "triggeredActivityRollAs": "self",
+          "autoConsume": false,
+          "forceConsumeDialog": "default",
+          "forceRollDialog": "default",
+          "forceDamageDialog": "default",
+          "confirmTargets": "default",
+          "autoTargetType": "any",
+          "autoTargetAction": "default",
+          "automationOnly": false,
+          "otherActivityCompatible": true,
+          "otherActivityAsParentType": true,
+          "identifier": "",
+          "displayActivityName": false,
+          "rollMode": "default",
+          "chooseEffects": false,
+          "toggleEffect": false,
+          "ignoreFullCover": false,
+          "removeChatButtons": "default",
+          "magicEffect": false,
+          "magicDamage": false,
+          "noConcentrationCheck": false,
+          "autoCEEffects": "default",
+          "triggeredActivityConsume": true,
+          "triggeredActivityConfigure": true,
+          "skipConcentrationCheck": false
+        },
+        "isOverTimeFlag": false,
+        "overTimeProperties": {
+          "saveRemoves": true,
+          "preRemoveConditionText": "",
+          "postRemoveConditionText": "",
+          "rollAs": "target"
+        },
+        "otherActivityId": "none",
+        "otherActivityAsParentType": true,
+        "img": null,
+        "regionBehavior": {
+          "enabled": false,
+          "dispositionFilter": -1,
+          "excludeSource": true,
+          "oncePerTurn": true,
+          "wallRestriction": "none",
+          "regionVisibility": 2,
+          "attachToken": "default",
+          "rules": []
+        },
+        "regionLight": {
+          "enabled": false,
+          "dim": 0,
+          "bright": 0,
+          "color": null,
+          "alpha": 0.5,
+          "luminosity": 0.5,
+          "animationType": "",
+          "animationSpeed": 5,
+          "animationIntensity": 5
+        }
+      }
+    },
+    "uses": {
+      "spent": 0,
+      "recovery": [
+        {
+          "period": "lr",
+          "type": "recoverAll"
+        }
+      ],
+      "max": "1"
+    },
+    "description": {
+      "value": "<p>Your performances are more than songs—they’re living diagrams of arcane form. Through a combination of precise verse, resonant pitch, and sigil-woven notation, you inscribe <em>patterns</em> of magic that can be poured into physical objects. These patterns are kept in a personal <strong>Codex of Resonance</strong>—a bound collection of your own compositions, diagrams, and marginalia. Every page hums faintly when turned, the glyphs vibrating with a sympathetic chord only you can hear.</p><p><strong>Patterns Known.</strong> At 3rd level, you inscribe <strong>four patterns</strong> into your Codex. You inscribe <strong>two additional patterns</strong> each time you gain a level in this class, provided you have spell slots of the appropriate level to create them.<br>When you inscribe a pattern that replicates a <em>specific magic item</em> (e.g., Bag of Holding, Cloak of Elvenkind, +1 Weapon), you must choose exactly which item it is. This choice is fixed until you replace the pattern. Whenever you gain a level in this class, you may replace one of your known patterns with a different pattern you could learn.</p><p><strong>Creating an Imbuement.</strong> You can spend <strong>1 minute</strong> performing the necessary sequence from your Codex to imbue an item with the chosen pattern, expending a spell slot of the appropriate level for that pattern. The slot remains <strong>parked</strong> while the imbuement is active.<br>An imbuement lasts until you end it as an <strong>action</strong>. When you end it, the magic fades and you immediately recover the expended spell slot. You cannot recover the slot in any other way while the imbuement is active. You can imbue a number of items at once equal to your <strong>proficiency bonus</strong>. An item can bear only <strong>one</strong> imbuement at a time. If an imbuement is placed on an item that already requires attunement, it does not require an additional attunement slot.</p><p><strong>Mundane or Magical.</strong> You can imbue a mundane item or an existing magic item. If the imbuement grants a numerical bonus and the item already has a bonus of the same type, use only the higher.</p><p><strong>Free Imbuement.</strong> You can create one Imbuement without using a spell slot. This lasts until you end it, and you regain its usage on a long rest.</p><p><strong>Harmonic Fabrication. </strong>Additionally, you can bridge the gap between your temporary songs and permanent matter. When you use the <strong>Craft</strong> activity to create a mundane or magic item that corresponds to one of your <strong>Patterns, </strong>a <strong>Wand</strong> or <strong>Spell Scroll</strong>, you can reduce the <strong>crafting time </strong>or <strong>crafting cost</strong> by 50%. If you <strong>know the pattern</strong>, you can do both.</p><hr><h2 style=\"margin:0 0 .5rem 0\">Pattern Tiers</h2><p style=\"margin:.25rem 0 1rem 0\"><em>Slot-based patterns your character can prepare. Unless noted, effects match the magic item description.</em></p><h3 style=\"margin:.25rem 0\">1st-Level Slot Patterns (common items &amp; minor effects)</h3><ul style=\"margin:.5rem 0 1rem 1.25rem\"><li><strong>Goggles of Night</strong> — Darkvision 60 ft (or +60 ft if you already have it).</li><li><strong>Rope of Climbing</strong> — As the magic item.</li><li><strong>Wand of Magic Detection</strong> — As the magic item.</li><li><strong>Wand of Secrets</strong> — As the magic item.</li><li><strong>Alchemy Jug</strong> — As the magic item.</li><li><strong>Bag of Holding</strong> — As the magic item.</li><li><strong>Ring of Water Walking - </strong>As the Magic item</li><li><strong>Returning Weapon</strong> — Returns after attack; +1 attack/damage. <em>Upgrade:</em> +2 (5th), +3 (7th).</li><li><strong>Enhanced Weapon</strong> — +1 bonus to attack/damage. <em>Upgrade</em>: +2 (4th), +3, (6th)</li><li><strong>Wand of the War Mage +1</strong> — As the magic item.</li></ul><h3 style=\"margin:.25rem 0\">2nd-Level Slot Patterns (common utility &amp; +1 bonuses)</h3><ul style=\"margin:.5rem 0 1rem 1.25rem\"><li><strong>Repeating Shot</strong> — Ignores Loading/conjures ammo; +1 attack/damage. <em>Upgrade:</em> +2 (5th), +3 (7th).</li><li><strong>Sending Stones</strong> — As the magic item.</li><li><strong>Shield +1</strong> — As the magic item.</li><li><strong>Boots of the Winding Path -</strong></li><li><strong>Resonant Strikes </strong>— A melee weapon or pair of gloves deals an extra 1d4 thunder damage.</li></ul><h3 style=\"margin:.25rem 0\">3rd-Level Slot Patterns (uncommon &amp; stronger utility)</h3><ul style=\"margin:.5rem 0 1rem 1.25rem\"><li><strong>Enhanced Defense</strong> — +1 AC. <em>Upgrade:</em> +2 (5th), +3 (7th).</li><li><strong>Mind Sharpener</strong> — 4 charges; on a failed Concentration save, expend 1 to succeed; regains 1d4 charges at dawn.</li><li><strong>Boots of the Winding Path</strong> — Bonus action teleport 15 ft to a space you occupied earlier this turn.</li><li><strong>Boots of Elvenkind</strong> — As the magic item.</li><li><strong>Cloak of Elvenkind</strong> — As the magic item.</li><li><strong>Cloak of the Manta Ray</strong> — As the magic item.</li><li><strong>Eyes of Charming</strong> — As the magic item.</li><li><strong>Gloves of Thievery</strong> — As the magic item.</li><li><strong>Lantern of Revealing</strong> — As the magic item.</li><li><strong>Uncommon Armor Wand or Weapon that isn't cursed.</strong></li></ul><h3 style=\"margin:.25rem 0\">4th-Level Slot Patterns (upper uncommon tier)</h3><ul style=\"margin:.5rem 0 1rem 1.25rem\"><li><strong>Weapon of Conflagration -</strong> +1 Bonus to attack rolls. Weapon deals 1d4 fire damage on a hit, if it hits an object, the object burns and takes 5 damage per round for 2 rounds.</li><li><strong>Winged Boots</strong> - as per the magic item</li><li><strong>Resistant Armor</strong> — Choose acid, cold, fire, lightning, necrotic, poison, or thunder; gain resistance.</li><li><strong>Radiant Weapon</strong> — +1, Bright 30 ft (dim +30). Reaction when you’re hit: attacker Con save (your DC) or blinded until end of its next turn; 3/day.</li><li><strong>Enspelled Weapon</strong>, <strong>Staff, or Armor</strong> - Max level 1 spell</li></ul><h3 style=\"margin:.25rem 0\">5th-Level Slot Patterns (rare tier)</h3><ul style=\"margin:.5rem 0 1rem 1.25rem\"><li><strong>Rare Armor, Ring, Wand, Weapon, or Wondrous Item (non-cursed)</strong> — As the magic item.</li><li><strong>Enhanced Defense (Upgrade)</strong> — Increases to +2 AC.</li><li><strong>Enhanced/Repeating/Returning Weapon (Upgrade)</strong> — Increases to +2 attack/damage.</li></ul><hr style=\"margin:1rem 0\"><p style=\"margin:.25rem 0\"><strong>Upgrade Notes:</strong> Where listed, upgrades improve the same infused item when you reach the indicated level (5th, 7th), subject to your class feature rules.</p>",
+      "chat": ""
+    },
+    "identifier": "prototype-imbuements",
+    "source": {
+      "revision": 1,
+      "rules": "2024"
+    },
+    "advancement": [],
+    "crewed": false,
+    "enchant": {},
+    "prerequisites": {
+      "repeatable": false,
+      "level": null,
+      "items": []
+    },
+    "properties": [],
+    "requirements": "",
+    "type": {
+      "value": "",
+      "subtype": ""
+    }
+  },
+  "effects": [],
+  "flags": {
+    "dnd5e": {
+      "riders": {
+        "activity": []
+      }
+    },
+    "innovations-codex": {
+      "schemaVersion": 2,
+      "feature": "prototype-imbuements"
+    }
+  },
+  "_key": "!items!2jUWfdVcdialQBay"
+}

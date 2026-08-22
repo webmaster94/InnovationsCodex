@@ -1,15 +1,26 @@
 {
   "id": "innovations-codex",
   "title": "Innovations Codex",
-  "description": "A Foundry VTT module for dnd5e that implements a homebrew crafting system. Players create blueprint items via the Create Innovation feat, assign them spell levels, and fabricate copies onto actors by spending spell slots.",
-  "version": "1.0.0",
+  "description": "Implements the College of Innovation for dnd5e, including feature-owned advancements, GM-approved patterns, Prototype Imbuements, and Analytical Muse automation.",
+  "version": "1.1.0",
+  "authors": [
+    {
+      "name": "override367",
+      "url": "https://github.com/override367"
+    },
+    {
+      "name": "webmaster94",
+      "url": "https://github.com/webmaster94"
+    }
+  ],
   "socket": true,
-  "url": "https://github.com/override367/InnovationsCodex",
-  "manifest": "https://raw.githubusercontent.com/override367/InnovationsCodex/main/module.json",
-  "download": "https://github.com/override367/InnovationsCodex/releases/download/1.0.0/innovations-codex.zip",
+  "url": "https://github.com/webmaster94/InnovationsCodex",
+  "manifest": "https://github.com/webmaster94/InnovationsCodex/releases/latest/download/module.json",
+  "download": "https://github.com/webmaster94/InnovationsCodex/releases/download/v1.1.0/innovations-codex.zip",
   "compatibility": {
-    "minimum": "12",
-    "verified": "13"
+    "minimum": "13.347",
+    "verified": "14",
+    "maximum": "14"
   },
   "relationships": {
     "systems": [
@@ -17,21 +28,45 @@
         "id": "dnd5e",
         "type": "system",
         "compatibility": {
-          "minimum": "4.0.0"
+          "minimum": "5.2.5",
+          "verified": "5.3.3"
         }
       }
     ],
     "requires": [
       {
         "id": "socketlib",
-        "type": "module"
+        "type": "module",
+        "manifest": "https://github.com/farling42/foundryvtt-socketlib/releases/latest/download/module.json"
+      },
+      {
+        "id": "dnd-players-handbook",
+        "type": "module",
+        "reason": "Provides Summon Construct for the Innovation Spells advancement."
       }
     ]
   },
   "esmodules": [
-    "main.js"
+    "dist/main.js"
   ],
   "styles": [
-    "styles/innovations-codex.css"
-  ]
+    {
+      "src": "styles/innovations-codex.css"
+    }
+  ],
+  "packs": [
+    {
+      "name": "college-of-innovation",
+      "label": "College of Innovation",
+      "path": "packs/college-of-innovation",
+      "type": "Item",
+      "system": "dnd5e",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "TRUSTED": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    }
+  ],
+  "flags": {}
 }

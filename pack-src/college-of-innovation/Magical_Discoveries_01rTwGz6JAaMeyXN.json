@@ -1,0 +1,153 @@
+{
+  "_id": "01rTwGz6JAaMeyXN",
+  "name": "Magical Discoveries",
+  "type": "feat",
+  "img": "https://assets.forge-vtt.com/bazaar/core/icons/sundries/books/book-tooled-eye-gold-red.webp",
+  "system": {
+    "description": {
+      "value": "<p>You learn two spells of your choice. These spells can come from the @UUID[Compendium.dnd-players-handbook.content.JournalEntry.phbSpells0000000.JournalEntryPage.SkHptN2PTzFGDaEj]{Cleric}, @UUID[Compendium.dnd-players-handbook.content.JournalEntry.phbSpells0000000.JournalEntryPage.LhvuDQEyrCdg5EfU]{Druid}, or @UUID[Compendium.dnd-players-handbook.content.JournalEntry.phbSpells0000000.JournalEntryPage.6AnqLUowgdsqMFvz]{Wizard} spell list or any combination thereof. A spell you choose must be a cantrip or a spell for which you have spell slots, as shown in the @UUID[Compendium.dnd-players-handbook.content.JournalEntry.phbBard000000000.JournalEntryPage.V8pqIWlaL9GhY61t#equipment]{Bard Features} table.</p><p>You always have the chosen spells prepared, and whenever you gain a Bard level, you can replace one of the spells with another spell that meets these requirements.</p>",
+      "chat": ""
+    },
+    "source": {
+      "custom": "",
+      "rules": "2024",
+      "revision": 1
+    },
+    "uses": {
+      "max": "",
+      "spent": 0,
+      "recovery": []
+    },
+    "type": {
+      "value": "class",
+      "subtype": ""
+    },
+    "prerequisites": {
+      "level": 6,
+      "repeatable": false,
+      "items": []
+    },
+    "properties": [],
+    "requirements": "College of Innovation 6",
+    "activities": {},
+    "enchant": {},
+    "identifier": "magical-discoveries",
+    "advancement": [
+      {
+        "type": "ItemChoice",
+        "_id": "LhBXyTrb0bGFqg0L",
+        "level": 6,
+        "title": "Magical Discoveries",
+        "configuration": {
+          "allowDrops": true,
+          "choices": {
+            "6": {
+              "count": 2,
+              "replacement": false
+            },
+            "7": {
+              "count": null,
+              "replacement": true
+            },
+            "8": {
+              "count": null,
+              "replacement": true
+            },
+            "9": {
+              "count": null,
+              "replacement": true
+            },
+            "10": {
+              "count": null,
+              "replacement": true
+            },
+            "11": {
+              "count": null,
+              "replacement": true
+            },
+            "12": {
+              "count": null,
+              "replacement": true
+            },
+            "13": {
+              "count": null,
+              "replacement": true
+            },
+            "14": {
+              "count": null,
+              "replacement": true
+            },
+            "15": {
+              "count": null,
+              "replacement": true
+            },
+            "16": {
+              "count": null,
+              "replacement": true
+            },
+            "17": {
+              "count": null,
+              "replacement": true
+            },
+            "18": {
+              "count": null,
+              "replacement": true
+            },
+            "19": {
+              "count": null,
+              "replacement": true
+            },
+            "20": {
+              "count": null,
+              "replacement": true
+            }
+          },
+          "pool": [],
+          "type": "spell",
+          "spell": {
+            "ability": [
+              "cha"
+            ],
+            "uses": {
+              "max": "",
+              "per": "",
+              "requireSlot": false
+            },
+            "method": "spell",
+            "prepared": 2
+          },
+          "restriction": {
+            "level": "available",
+            "list": [
+              "class:cleric",
+              "class:druid",
+              "class:wizard"
+            ],
+            "subtype": "",
+            "type": "spell"
+          }
+        },
+        "value": {
+          "added": {},
+          "replaced": {}
+        },
+        "hint": "Choose two Cleric, Druid, or Wizard spells you can cast. At each later Bard level, you may replace one.",
+        "flags": {}
+      }
+    ],
+    "crewed": false
+  },
+  "effects": [],
+  "flags": {
+    "dnd5e": {
+      "riders": {
+        "activity": []
+      }
+    },
+    "innovations-codex": {
+      "schemaVersion": 2,
+      "feature": "magical-discoveries"
+    }
+  },
+  "_key": "!items!01rTwGz6JAaMeyXN"
+}
